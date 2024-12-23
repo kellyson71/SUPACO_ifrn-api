@@ -389,19 +389,28 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Loading bar
+        // Inicialização do tema e eventos
         document.addEventListener('DOMContentLoaded', function() {
+            // Loading bar
             const loadingBar = document.getElementById('loadingBar');
-            
-            document.addEventListener('click', 'a', function() {
-                loadingBar.style.display = 'block';
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    loadingBar.style.display = 'block';
+                });
             });
 
+            // Tema escuro
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             
-            // Event listener para o botão de tema
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('themeToggle').addEventListener('click', function() {
+                const body = document.body;
+                const currentTheme = body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
         });
 
         // Calculadora de Média
@@ -421,16 +430,6 @@
             resultado.innerHTML = `Média Final: ${media.toFixed(1)}`;
             resultado.className = `alert ${media >= 60 ? 'alert-success' : 'alert-danger'}`;
         });
-
-        // Função para alternar o tema
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
     </script>
 
     <div class="container mt-4">
