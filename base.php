@@ -21,28 +21,12 @@
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-            
-            /* Variáveis para tema escuro/claro */
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
-            --card-bg: #fff;
-            --border-color: rgba(0,0,0,0.1);
-        }
-
-        /* Tema escuro */
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #e1e1e1;
-            --card-bg: #242424;
-            --border-color: rgba(255,255,255,0.1);
         }
         
         body {
-            background-color: var(--bg-color);
+            background-color: #f8f9fa;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            color: var(--text-color);
-            transition: background-color var(--transition-speed), color var(--transition-speed);
         }
         
         .navbar-custom {
@@ -53,6 +37,19 @@
             z-index: 1040;
         }
 
+        .navbar-custom .nav-link {
+            color: white !important;
+            opacity: 0.9;
+        }
+
+        .navbar-custom .nav-link:hover {
+            opacity: 1;
+        }
+
+        .navbar-custom .navbar-brand {
+            color: white;
+        }
+        
         .navbar-brand {
             font-weight: 600;
             font-size: 1.3rem;
@@ -228,57 +225,10 @@
         .simular-nota i {
             font-size: 0.8rem;
         }
-
-        /* Botão de tema */
-        .theme-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            box-shadow: var(--shadow-md);
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-speed);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            background: var(--primary-dark);
-        }
-
-        [data-theme="dark"] .theme-toggle .fa-moon {
-            display: none;
-        }
-
-        [data-theme="dark"] .theme-toggle .fa-sun {
-            display: inline-block;
-        }
-
-        .theme-toggle .fa-sun {
-            display: none;
-        }
-
-        .theme-toggle .fa-moon {
-            display: inline-block;
-        }
     </style>
 </head>
 <body>
     <div class="loading-bar" id="loadingBar"></div>
-    
-    <!-- Adicione o botão de tema logo após a abertura do body -->
-    <button class="theme-toggle" id="themeToggle" title="Alternar tema">
-        <i class="fas fa-moon"></i>
-        <i class="fas fa-sun"></i>
-    </button>
 
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
@@ -397,19 +347,6 @@
                 link.addEventListener('click', function() {
                     loadingBar.style.display = 'block';
                 });
-            });
-
-            // Tema escuro
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-            
-            document.getElementById('themeToggle').addEventListener('click', function() {
-                const body = document.body;
-                const currentTheme = body.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
-                body.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
             });
         });
 
