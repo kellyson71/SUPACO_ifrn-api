@@ -497,112 +497,181 @@ ob_start(); // Inicia o buffer de saída
         </div>
     </div>
 
-    <!-- Resto do conteúdo permanece igual -->
+    <!-- Seção do Boletim -->
     <div class="animate-fade-in-up" style="animation-delay: 0.4s">
         <h3 class="mb-4">Boletim <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?></h3>
         
         <?php if (isset($boletim) && is_array($boletim)): ?>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Disciplina</th>
-                            <th>Nota 1</th>
-                            <th>Nota 2</th>
-                            <th>Nota 3</th>
-                            <th>Nota 4</th>
-                            <th>Média</th>
-                            <th>Freq. (%)</th>
-                            <th>Situação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($boletim as $disciplina): ?>
+            <!-- Versão Desktop -->
+            <div class="d-none d-md-block">
+                <div class="table-responsive">
+                    <table class="table table-striped table-boletim">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($disciplina['disciplina']); ?></td>
-                                <td>
-                                    <?php if (isset($disciplina['nota_etapa_1']['nota'])): ?>
-                                        <?php echo $disciplina['nota_etapa_1']['nota']; ?>
-                                    <?php else: ?>
-                                        <div class="nota-simulacao">
-                                            <input type="number" 
-                                                   class="form-control form-control-sm nota-input" 
-                                                   style="width: 70px" 
-                                                   min="0" 
-                                                   max="100" 
-                                                   step="0.1"
-                                                   data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                   data-etapa="1"
-                                                   placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($disciplina['nota_etapa_2']['nota'])): ?>
-                                        <?php echo $disciplina['nota_etapa_2']['nota']; ?>
-                                    <?php else: ?>
-                                        <div class="nota-simulacao">
-                                            <input type="number" 
-                                                   class="form-control form-control-sm nota-input" 
-                                                   style="width: 70px" 
-                                                   min="0" 
-                                                   max="100" 
-                                                   step="0.1"
-                                                   data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                   data-etapa="2"
-                                                   placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($disciplina['nota_etapa_3']['nota'])): ?>
-                                        <?php echo $disciplina['nota_etapa_3']['nota']; ?>
-                                    <?php else: ?>
-                                        <div class="nota-simulacao">
-                                            <input type="number" 
-                                                   class="form-control form-control-sm nota-input" 
-                                                   style="width: 70px" 
-                                                   min="0" 
-                                                   max="100" 
-                                                   step="0.1"
-                                                   data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                   data-etapa="3"
-                                                   placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($disciplina['nota_etapa_4']['nota'])): ?>
-                                        <?php echo $disciplina['nota_etapa_4']['nota']; ?>
-                                    <?php else: ?>
-                                        <div class="nota-simulacao">
-                                            <input type="number" 
-                                                   class="form-control form-control-sm nota-input" 
-                                                   style="width: 70px" 
-                                                   min="0" 
-                                                   max="100" 
-                                                   step="0.1"
-                                                   data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                   data-etapa="4"
-                                                   placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo isset($disciplina['media_final_disciplina']) ? $disciplina['media_final_disciplina'] : '-'; ?></td>
-                                <td>
-                                    <?php 
-                                    $frequencia = isset($disciplina['percentual_carga_horaria_frequentada']) 
-                                        ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1) 
-                                        : '-';
-                                    $frequenciaClass = $frequencia < 75 && $frequencia != '-' ? 'text-danger' : '';
-                                    echo "<span class='{$frequenciaClass}'>{$frequencia}</span>";
-                                    ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($disciplina['situacao']); ?></td>
+                                <th class="disciplina-col">Disciplina</th>
+                                <th style="min-width: 70px">N1</th>
+                                <th style="min-width: 70px">N2</th>
+                                <th style="min-width: 70px">N3</th>
+                                <th style="min-width: 70px">N4</th>
+                                <th style="min-width: 70px">Média</th>
+                                <th style="min-width: 70px">Freq.</th>
+                                <th>Situação</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($boletim as $disciplina): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($disciplina['disciplina']); ?></td>
+                                    <td>
+                                        <?php if (isset($disciplina['nota_etapa_1']['nota'])): ?>
+                                            <?php echo $disciplina['nota_etapa_1']['nota']; ?>
+                                        <?php else: ?>
+                                            <div class="nota-simulacao">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm nota-input" 
+                                                       style="width: 70px" 
+                                                       min="0" 
+                                                       max="100" 
+                                                       step="0.1"
+                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                       data-etapa="1"
+                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (isset($disciplina['nota_etapa_2']['nota'])): ?>
+                                            <?php echo $disciplina['nota_etapa_2']['nota']; ?>
+                                        <?php else: ?>
+                                            <div class="nota-simulacao">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm nota-input" 
+                                                       style="width: 70px" 
+                                                       min="0" 
+                                                       max="100" 
+                                                       step="0.1"
+                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                       data-etapa="2"
+                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (isset($disciplina['nota_etapa_3']['nota'])): ?>
+                                            <?php echo $disciplina['nota_etapa_3']['nota']; ?>
+                                        <?php else: ?>
+                                            <div class="nota-simulacao">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm nota-input" 
+                                                       style="width: 70px" 
+                                                       min="0" 
+                                                       max="100" 
+                                                       step="0.1"
+                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                       data-etapa="3"
+                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (isset($disciplina['nota_etapa_4']['nota'])): ?>
+                                            <?php echo $disciplina['nota_etapa_4']['nota']; ?>
+                                        <?php else: ?>
+                                            <div class="nota-simulacao">
+                                                <input type="number" 
+                                                       class="form-control form-control-sm nota-input" 
+                                                       style="width: 70px" 
+                                                       min="0" 
+                                                       max="100" 
+                                                       step="0.1"
+                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                       data-etapa="4"
+                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo isset($disciplina['media_final_disciplina']) ? $disciplina['media_final_disciplina'] : '-'; ?></td>
+                                    <td>
+                                        <?php 
+                                        $frequencia = isset($disciplina['percentual_carga_horaria_frequentada']) 
+                                            ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1) 
+                                            : '-';
+                                        $frequenciaClass = $frequencia < 75 && $frequencia != '-' ? 'text-danger' : '';
+                                        echo "<span class='{$frequenciaClass}'>{$frequencia}</span>";
+                                        ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($disciplina['situacao']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Versão Mobile -->
+            <div class="d-md-none">
+                <div class="row g-3">
+                    <?php foreach ($boletim as $disciplina): ?>
+                        <div class="col-12">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <!-- Cabeçalho da Disciplina -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="card-title text-primary mb-1">
+                                                <?php 
+                                                // Extrai apenas o nome da disciplina sem o código
+                                                preg_match('/^[^-]+ - (.+?)(\(\d+H\))?$/', $disciplina['disciplina'], $matches);
+                                                echo htmlspecialchars($matches[1] ?? $disciplina['disciplina']); 
+                                                ?>
+                                            </h6>
+                                            <div class="d-flex gap-2">
+                                                <span class="badge <?php echo isset($disciplina['media_final_disciplina']) && $disciplina['media_final_disciplina'] >= 60 ? 'bg-success' : 'bg-danger'; ?>">
+                                                    Média: <?php echo isset($disciplina['media_final_disciplina']) ? $disciplina['media_final_disciplina'] : '-'; ?>
+                                                </span>
+                                                <span class="badge <?php echo isset($disciplina['percentual_carga_horaria_frequentada']) && $disciplina['percentual_carga_horaria_frequentada'] >= 75 ? 'bg-success' : 'bg-danger'; ?>">
+                                                    Freq: <?php echo isset($disciplina['percentual_carga_horaria_frequentada']) ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1) . '%' : '-'; ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                                            <?php echo htmlspecialchars($disciplina['situacao']); ?>
+                                        </span>
+                                    </div>
+
+                                    <!-- Grid de Notas -->
+                                    <div class="row g-2 mt-2">
+                                        <?php for($i = 1; $i <= 4; $i++): ?>
+                                            <div class="col-3">
+                                                <div class="p-2 border rounded text-center">
+                                                    <small class="d-block text-muted mb-1">N<?php echo $i; ?></small>
+                                                    <?php if (isset($disciplina["nota_etapa_{$i}"]['nota'])): ?>
+                                                        <strong><?php echo $disciplina["nota_etapa_{$i}"]['nota']; ?></strong>
+                                                    <?php else: ?>
+                                                        <input type="number" 
+                                                               class="form-control form-control-sm nota-input text-center p-0"
+                                                               style="height: 24px; font-size: 0.875rem;"
+                                                               min="0" 
+                                                               max="100" 
+                                                               step="0.1"
+                                                               data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                               data-etapa="<?php echo $i; ?>"
+                                                               placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="text-center">
+                                                    <small class="text-muted">
+                                                        Peso <?php echo $i <= 2 ? '2' : '3'; ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
         <?php else: ?>
             <div class="alert alert-warning">
@@ -614,7 +683,7 @@ ob_start(); // Inicia o buffer de saída
             </div>
         <?php endif; ?>
     </div>
-    
+
     <!-- Seção do Horário -->
     <div class="animate-fade-in-up" style="animation-delay: 0.6s">
         <h3 class="mt-5 mb-4">Horário de Aulas</h3>
@@ -746,6 +815,68 @@ document.querySelectorAll('.nota-input').forEach(input => {
         flex-wrap: wrap;
         gap: 0.5rem;
         width: 100%;
+    }
+}
+
+/* Estilos para tabelas em mobile */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: 0;
+        margin-bottom: 0;
+    }
+
+    .table-boletim {
+        font-size: 0.85rem;
+    }
+
+    .table-boletim th {
+        padding: 0.5rem !important;
+        font-size: 0.8rem;
+    }
+
+    .table-boletim td {
+        padding: 0.5rem !important;
+    }
+
+    .nota-simulacao input {
+        width: 50px !important;
+        padding: 0.25rem !important;
+        font-size: 0.8rem;
+    }
+
+    .disciplina-col {
+        max-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 768px) {
+    .nota-input {
+        border: none;
+        background: transparent;
+        width: 100%;
+    }
+    
+    .nota-input:focus {
+        outline: none;
+        background: rgba(26, 115, 232, 0.1);
+    }
+
+    .nota-input::placeholder {
+        color: #ffc107;
+        font-size: 0.8rem;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        line-height: 1.3;
     }
 }
 </style>
