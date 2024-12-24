@@ -16,12 +16,7 @@ session_start();
 
 // Autenticação SUAP
 if (!isset($_SESSION['access_token'])) {
-    $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
-        'response_type' => 'code',
-        'client_id' => SUAP_CLIENT_ID,
-        'redirect_uri' => REDIRECT_URI
-    ]);
-    header("Location: " . $auth_url);
+    header('Location: login.php');
     exit;
 }
 
@@ -254,57 +249,82 @@ ob_start(); // Inicia o buffer de saída
 ?>
 
 <div class="container mt-4">
-    <!-- Hero Section -->
-    <div class="card bg-primary text-white shadow-lg mb-4 rounded-3 border-0 animate-fade-in-up">
-        <div class="card-body p-4">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <?php if (isset($meusDados['url_foto_150x200'])): ?>
-                        <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>" 
-                             class="rounded-circle border border-3 border-white shadow" 
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                    <?php else: ?>
-                        <i class="fas fa-user-circle" style="font-size: 5rem;"></i>
-                    <?php endif; ?>
-                </div>
-                <div class="col">
-                    <h2 class="display-6 mb-0">Olá, <?php echo htmlspecialchars($meusDados['nome_usual']); ?>!</h2>
-                    <p class="lead mb-0">
-                        <?php 
-                        $vinculo = $meusDados['vinculo'] ?? [];
-                        $curso = '';
-                        
-                        if (isset($vinculo['curso'])) {
-                            $curso = $vinculo['curso'];
-                        } elseif (isset($vinculo['curso_turma'])) {
-                            $curso = $vinculo['curso_turma'];
-                        } elseif (isset($meusDados['curso'])) {
-                            $curso = $meusDados['curso'];
-                        }
-                        
-                        echo htmlspecialchars($meusDados['tipo_vinculo'] ?? 'Aluno');
-                        if ($curso) {
-                            echo ' • ' . htmlspecialchars($curso);
-                        }
-                        ?>
-                    </p>
-                    <div class="mt-2">
-                        <small>
-                            <i class="fas fa-calendar-alt me-1"></i> 
-                            <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?> • 
-                            Matrícula: <?php echo htmlspecialchars($meusDados['matricula']); ?>
-                        </small>
-                    </div>
-                </div>
+    <!-- Hero Section Moderno -->
+    <div class="card border-0 mb-4 overflow-hidden bg-primary">
+        <div class="hero-wrapper position-relative">
+            <!-- Background com gradiente e padrão -->
+            <div class="hero-bg position-absolute w-100 h-100" 
+                 style="background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+                        background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+                        background-size: 20px 20px;">
             </div>
-        </div>
-        <div class="card-footer bg-primary-dark py-2 border-top border-primary-dark">
-            <div class="row text-center">
-                <div class="col">
-                    <small>
-                        <i class="fas fa-clock me-1"></i> 
-                        <?php echo date('d/m/Y H:i'); ?>
-                    </small>
+            
+            <!-- Conteúdo do Hero -->
+            <div class="card-body position-relative py-5 text-white">
+                <div class="row align-items-center">
+                    <!-- Coluna da Logo -->
+                    <div class="col-lg-3 text-center mb-4 mb-lg-0">
+                        <div class="logo-container bg-white rounded-4 p-3 d-inline-block shadow-lg">
+                            <img src="assets/logo.png" 
+                                 alt="SUPACO Logo" 
+                                 class="img-fluid rounded-4" 
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        </div>
+                    </div>
+                    
+                    <!-- Coluna do Conteúdo -->
+                    <div class="col-lg-9 text-white">
+                        <div class="text-shadow">
+                            <h1 class="display-4 fw-bold mb-2">
+                                SUPACO
+                                <span class="badge bg-white text-primary fs-6 align-middle ms-2">
+                                    Beta
+                                </span>
+                            </h1>
+                            <h2 class="h3 mb-3">
+                                Sistema Útil Pra Aluno Cansado e Ocupado
+                            </h2>
+                            <p class="lead mb-4">
+                                <i class="fas fa-quote-left fa-sm me-2"></i>
+                                Porque até super-heróis precisam de uma ajudinha para sobreviver ao semestre!
+                                <i class="fas fa-quote-right fa-sm ms-2"></i>
+                            </p>
+                            
+                            <!-- Status do Usuário -->
+                            <?php if (isset($_SESSION['access_token']) && isset($meusDados)): ?>
+                                <div class="d-flex align-items-center bg-white bg-opacity-25 backdrop-blur rounded-3 p-3 hero-user-info">
+                                    <?php if (isset($meusDados['url_foto_150x200'])): ?>
+                                        <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>" 
+                                             class="rounded-circle border border-3 border-white shadow" 
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    <?php endif; ?>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-2">
+                                            <?php echo htmlspecialchars($meusDados['nome_usual']); ?>
+                                        </h6>
+                                        <div class="badges-wrapper">
+                                            <span class="badge bg-white bg-opacity-25">
+                                                <i class="fas fa-id-card me-1"></i>
+                                                <?php echo htmlspecialchars($meusDados['matricula']); ?>
+                                            </span>
+                                            <span class="badge bg-white bg-opacity-25">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>
+                                            </span>
+                                            <a href="logout.php" class="btn btn-sm btn-light">
+                                                <i class="fas fa-sign-out-alt"></i> Sair
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert bg-white bg-opacity-25 backdrop-blur border-0 text-white d-inline-flex align-items-center" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Faça login com suas credenciais do SUAP para começar
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -373,7 +393,7 @@ ob_start(); // Inicia o buffer de saída
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 impact-section">
             <div class="card h-100 shadow-sm glass-effect">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
@@ -381,7 +401,7 @@ ob_start(); // Inicia o buffer de saída
                         Impacto na Frequência
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body text-center">
                     <?php if (!empty($aulasAmanha)): ?>
                         <div class="text-center mb-3">
                             <?php
@@ -421,11 +441,11 @@ ob_start(); // Inicia o buffer de saída
                             
                             <img src="assets/<?php echo $imagemStatus[$statusGeral]; ?>" 
                                  alt="Status de frequência"
-                                 class="mb-3"
-                                 style="height: 80px; width: auto;">
-                            <h6 class="mb-3 <?php echo $corStatus[$statusGeral]; ?>">
+                                 class="impact-image mb-4"
+                                 style="height: 100px; width: auto;">
+                            <h5 class="impact-status mb-4 <?php echo $corStatus[$statusGeral]; ?>">
                                 <?php echo $mensagemStatus[$statusGeral]; ?>
-                            </h6>
+                            </h5>
                         </div>
                         
                         <div class="list-group">
@@ -680,6 +700,53 @@ document.querySelectorAll('.nota-input').forEach(input => {
 .nota-input::placeholder {
     color: #ffc107;
     opacity: 1;
+}
+
+/* Ajustes de responsividade */
+@media (max-width: 768px) {
+    .user-status {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .user-status .badge {
+        font-size: 0.8rem;
+    }
+    
+    .user-status img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .impact-section {
+        margin-top: 1.5rem !important;
+    }
+
+    .impact-image {
+        width: auto;
+        height: 120px !important;
+        margin: 1rem auto;
+    }
+
+    .impact-status {
+        font-size: 1.1rem;
+        margin: 1rem 0;
+    }
+
+    /* Ajuste para hero em mobile */
+    .hero-user-info {
+        padding: 0.8rem !important;
+        gap: 0.5rem;
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .hero-user-info .badges-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        width: 100%;
+    }
 }
 </style>
 

@@ -225,6 +225,125 @@
         .simular-nota i {
             font-size: 0.8rem;
         }
+
+        /* Estilos adicionais para o Hero */
+        .hero-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            z-index: 0;
+        }
+
+        .hero-wrapper .card-body {
+            z-index: 1;
+        }
+
+        .logo-container {
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        /* Animações suaves */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Melhorias de responsividade */
+        @media (max-width: 768px) {
+            .hero-wrapper .display-4 {
+                font-size: 2.5rem;
+            }
+            .hero-wrapper .h3 {
+                font-size: 1.5rem;
+            }
+            .hero-wrapper .lead {
+                font-size: 1rem;
+            }
+        }
+
+        /* Adicione estes estilos específicos para o hero */
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .backdrop-blur {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .hero-bg {
+            opacity: 1 !important;
+        }
+
+        .rounded-4 {
+            border-radius: 1.5rem !important;
+        }
+
+        /* Ajuste para melhor contraste */
+        .badge.bg-white.bg-opacity-25 {
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Estilos adicionais para a landing page */
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            border: none;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.6);
+        }
+
+        .alert-info {
+            background-color: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+        }
+
+        /* Estilos adicionais para o login */
+        .backdrop-blur-lg {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .max-width-500 {
+            max-width: 500px;
+        }
+
+        /* Ajustes para melhor legibilidade */
+        .bg-opacity-20 {
+            --bs-bg-opacity: 0.25;
+        }
+
+        .card.bg-white.bg-opacity-20 {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
     </style>
 </head>
 <body>
