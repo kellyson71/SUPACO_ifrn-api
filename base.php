@@ -352,8 +352,8 @@
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <i class="fas fa-calculator me-2"></i>
-                IF calc
+                <i class="fas fa-graduation-cap me-2"></i>
+                SUPACO
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -422,34 +422,71 @@
 
     <!-- Modal para Calcular Média -->
     <div class="modal fade" id="calcMediaModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Calculadora de Média</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calculator me-2"></i>
+                        Calculadora de Média
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">1º Bimestre (Peso 2)</label>
-                        <input type="number" class="form-control" id="nota1" min="0" max="100">
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="nota1" min="0" max="100" placeholder="Nota">
+                                <label class="text-muted">
+                                    <i class="fas fa-star-half-alt me-1"></i>
+                                    1º Bimestre (Peso 2)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="nota2" min="0" max="100" placeholder="Nota">
+                                <label class="text-muted">
+                                    <i class="fas fa-star-half-alt me-1"></i>
+                                    2º Bimestre (Peso 2)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="nota3" min="0" max="100" placeholder="Nota">
+                                <label class="text-muted">
+                                    <i class="fas fa-star-half-alt me-1"></i>
+                                    3º Bimestre (Peso 3)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="nota4" min="0" max="100" placeholder="Nota">
+                                <label class="text-muted">
+                                    <i class="fas fa-star-half-alt me-1"></i>
+                                    4º Bimestre (Peso 3)
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">2º Bimestre (Peso 2)</label>
-                        <input type="number" class="form-control" id="nota2" min="0" max="100">
+
+                    <div class="card border-0 shadow-sm mt-3 overflow-hidden">
+                        <div class="card-body p-4 text-center" id="resultadoMedia">
+                            <div class="h4 mb-0">Insira suas notas para calcular a média</div>
+                            <div class="text-muted small">O sistema considerará os pesos de cada bimestre</div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">3º Bimestre (Peso 3)</label>
-                        <input type="number" class="form-control" id="nota3" min="0" max="100">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">4º Bimestre (Peso 3)</label>
-                        <input type="number" class="form-control" id="nota4" min="0" max="100">
-                    </div>
-                    <div class="alert alert-info" id="resultadoMedia"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" id="calcularBtn">Calcular</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        Fechar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="calcularBtn">
+                        <i class="fas fa-calculator me-1"></i>
+                        Calcular Média
+                    </button>
                 </div>
             </div>
         </div>
@@ -483,8 +520,21 @@
             const media = ((nota1 * 2) + (nota2 * 2) + (nota3 * 3) + (nota4 * 3)) / 10;
             const resultado = document.getElementById('resultadoMedia');
             
-            resultado.innerHTML = `Média Final: ${media.toFixed(1)}`;
-            resultado.className = `alert ${media >= 60 ? 'alert-success' : 'alert-danger'}`;
+            const status = media >= 60 ? 'aprovado' : 'reprovado';
+            const statusClass = media >= 60 ? 'success' : 'danger';
+            const statusIcon = media >= 60 ? 'check-circle' : 'exclamation-circle';
+            
+            resultado.innerHTML = `
+                <div class="text-${statusClass}">
+                    <i class="fas fa-${statusIcon} fa-2x mb-2"></i>
+                    <div class="h2 mb-2">${media.toFixed(1)}</div>
+                    <div class="text-capitalize fw-bold">
+                        ${status}
+                    </div>
+                </div>
+            `;
+            
+            resultado.className = `card-body p-4 text-center animate__animated animate__fadeIn`;
         });
     </script>
 
