@@ -1,4 +1,6 @@
 # SUPACO
+![image](https://github.com/user-attachments/assets/784d7966-a02b-48d3-879b-75ec3dd1482f)
+
 ## Sistema Útil Pra Aluno Cansado e Ocupado
 
 SUPACO é um sistema de gestão acadêmica que se conecta à API do SUAP para fornecer uma visão consolidada do desempenho acadêmico dos alunos. Ele exibe dados de aulas, calcula notas e frequências, e oferece uma interface intuitiva para simulação de notas.
