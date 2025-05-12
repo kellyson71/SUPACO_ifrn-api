@@ -1,5 +1,26 @@
-# IF-calc
+# SUPACO
+![image](https://github.com/user-attachments/assets/784d7966-a02b-48d3-879b-75ec3dd1482f)
 
+## Sistema Útil Pra Aluno Cansado e Ocupado
+
+SUPACO é um sistema de gestão acadêmica que se conecta à API do SUAP para fornecer uma visão consolidada do desempenho acadêmico dos alunos. Ele exibe dados de aulas, calcula notas e frequências, e oferece uma interface intuitiva para simulação de notas.
+
+![image](https://github.com/user-attachments/assets/c6fd1065-6035-4038-be0c-03a9ad96d670)
+
+
+
+## Funcionalidades
+
+- **Autenticação via SUAP**: Integração com o sistema SUAP para autenticação segura.
+- **Consulta de Dados Acadêmicos**: Exibe informações detalhadas sobre disciplinas, notas e frequência.
+- **Simulação de Notas**: Permite simular notas para prever o impacto no desempenho acadêmico.
+- **Horários de Aulas**: Mostra os horários das aulas de forma organizada e visualmente agradável.
+
+![image](https://github.com/user-attachments/assets/dd58ac42-cbe3-4346-b351-3aa6228f62e0)
+
+![image](https://github.com/user-attachments/assets/5a17c98d-9b9f-47d3-af4c-cdcc5e2ffeb9) ![image](https://github.com/user-attachments/assets/659603f3-6bca-48cd-bea6-6e18f8d554a8)
+
+<<<<<<< HEAD
 IF-calc é um sistema de gestão acadêmica que se conecta à API do SUAP para fornecer uma visão consolidada do desempenho acadêmico dos alunos. Ele exibe dados de aulas, calcula notas e frequências, e oferece uma interface intuitiva para simulação de notas.
 
 ## Funcionalidades
@@ -9,6 +30,8 @@ IF-calc é um sistema de gestão acadêmica que se conecta à API do SUAP para f
 - **Simulação de Notas**: Permite simular notas para prever o impacto no desempenho acadêmico.
 - **Horários de Aulas**: Mostra os horários das aulas de forma organizada e visualmente agradável.
 - **Modo Escuro**: Alterna entre temas claro e escuro para melhor conforto visual.
+=======
+>>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
 
 ## Pré-requisitos
 

@@ -813,6 +813,8 @@
             <a class="navbar-brand d-flex align-items-center" href="index.php">
                 <i class="fas fa-graduation-cap me-2"></i>
                 SUPACO
+                <i class="fas fa-graduation-cap me-2"></i>
+                SUPACO
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -898,241 +900,249 @@
                         Calculadora de Média
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" id="nota1" min="0" max="100" placeholder="Nota">
-                                <label class="text-muted">
-                                    <i class="fas fa-star-half-alt me-1"></i>
-                                    1º Bimestre (Peso 2)
-                                </label>
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white border-0">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Calculadora de Média
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" id="nota2" min="0" max="100" placeholder="Nota">
-                                <label class="text-muted">
-                                    <i class="fas fa-star-half-alt me-1"></i>
-                                    2º Bimestre (Peso 2)
-                                </label>
+                            <div class="modal-body p-4">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="nota1" min="0" max="100" placeholder="Nota">
+                                            <label class="text-muted">
+                                                <i class="fas fa-star-half-alt me-1"></i>
+                                                1º Bimestre (Peso 2)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="nota2" min="0" max="100" placeholder="Nota">
+                                            <label class="text-muted">
+                                                <i class="fas fa-star-half-alt me-1"></i>
+                                                2º Bimestre (Peso 2)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="nota3" min="0" max="100" placeholder="Nota">
+                                            <label class="text-muted">
+                                                <i class="fas fa-star-half-alt me-1"></i>
+                                                3º Bimestre (Peso 3)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-floating">
+                                            <input type="number" class="form-control" id="nota4" min="0" max="100" placeholder="Nota">
+                                            <label class="text-muted">
+                                                <i class="fas fa-star-half-alt me-1"></i>
+                                                4º Bimestre (Peso 3)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card border-0 shadow-sm mt-3 overflow-hidden">
+                                    <div class="card-body p-4 text-center" id="resultadoMedia">
+                                        <div class="h4 mb-0">Insira suas notas para calcular a média</div>
+                                        <div class="text-muted small">O sistema considerará os pesos de cada bimestre</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" id="nota3" min="0" max="100" placeholder="Nota">
-                                <label class="text-muted">
-                                    <i class="fas fa-star-half-alt me-1"></i>
-                                    3º Bimestre (Peso 3)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating">
-                                <input type="number" class="form-control" id="nota4" min="0" max="100" placeholder="Nota">
-                                <label class="text-muted">
-                                    <i class="fas fa-star-half-alt me-1"></i>
-                                    4º Bimestre (Peso 3)
-                                </label>
+                            <div class="modal-footer border-0 bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>
+                                    Fechar
+                                </button>
+                                <button type="button" class="btn btn-primary" id="calcularBtn">
+                                    <i class="fas fa-calculator me-1"></i>
+                                    Calcular Média
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="card border-0 shadow-sm mt-3 overflow-hidden">
-                        <div class="card-body p-4 text-center" id="resultadoMedia">
-                            <div class="h4 mb-0">Insira suas notas para calcular a média</div>
-                            <div class="text-muted small">O sistema considerará os pesos de cada bimestre</div>
+                <!-- Modal para visualização de dados da API -->
+                <div class="modal fade" id="apiInfoModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-dark text-white border-0">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-code me-2"></i>
+                                    Dados da API
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <div class="nav nav-tabs" id="apiTabs" role="tablist">
+                                    <button class="nav-link active" id="meusDados-tab" data-bs-toggle="tab"
+                                        data-bs-target="#meusDados-tab-pane" type="button" role="tab">
+                                        Meus Dados
+                                    </button>
+                                    <button class="nav-link" id="boletim-tab" data-bs-toggle="tab"
+                                        data-bs-target="#boletim-tab-pane" type="button" role="tab">
+                                        Boletim
+                                    </button>
+                                    <button class="nav-link" id="horarios-tab" data-bs-toggle="tab"
+                                        data-bs-target="#horarios-tab-pane" type="button" role="tab">
+                                        Horários
+                                    </button>
+                                </div>
+                                <div class="tab-content p-3" id="apiTabsContent">
+                                    <div class="tab-pane fade show active" id="meusDados-tab-pane" role="tabpanel" tabindex="0">
+                                        <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
+                                                                                                                            echo isset($apiResponses['meusDados']) ? json_encode($apiResponses['meusDados'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
+                                                                                                                            ?></code></pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="boletim-tab-pane" role="tabpanel" tabindex="0">
+                                        <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
+                                                                                                                            echo isset($apiResponses['boletim']) ? json_encode($apiResponses['boletim'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
+                                                                                                                            ?></code></pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="horarios-tab-pane" role="tabpanel" tabindex="0">
+                                        <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
+                                                                                                                            echo isset($apiResponses['horarios']) ? json_encode($apiResponses['horarios'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
+                                                                                                                            ?></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>
+                                    Fechar
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>
-                        Fechar
-                    </button>
-                    <button type="button" class="btn btn-primary" id="calcularBtn">
-                        <i class="fas fa-calculator me-1"></i>
-                        Calcular Média
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+                </div> <!-- Scripts -->
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+                <script src="assets/day-selector.js"></script>
+                <script src="assets/notification.js"></script>
+                <script>
+                    // Sistema de notificações Toast moderno
+                    function showToast(message, type = 'success', duration = 5000) {
+                        const bgColors = {
+                            success: 'linear-gradient(to right, #10b981, #059669)',
+                            warning: 'linear-gradient(to right, #f59e0b, #d97706)',
+                            danger: 'linear-gradient(to right, #ef4444, #dc2626)',
+                            info: 'linear-gradient(to right, #06b6d4, #0891b2)'
+                        };
 
-    <!-- Modal para visualização de dados da API -->
-    <div class="modal fade" id="apiInfoModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-dark text-white border-0">
-                    <h5 class="modal-title">
-                        <i class="fas fa-code me-2"></i>
-                        Dados da API
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="nav nav-tabs" id="apiTabs" role="tablist">
-                        <button class="nav-link active" id="meusDados-tab" data-bs-toggle="tab"
-                            data-bs-target="#meusDados-tab-pane" type="button" role="tab">
-                            Meus Dados
-                        </button>
-                        <button class="nav-link" id="boletim-tab" data-bs-toggle="tab"
-                            data-bs-target="#boletim-tab-pane" type="button" role="tab">
-                            Boletim
-                        </button>
-                        <button class="nav-link" id="horarios-tab" data-bs-toggle="tab"
-                            data-bs-target="#horarios-tab-pane" type="button" role="tab">
-                            Horários
-                        </button>
-                    </div>
-                    <div class="tab-content p-3" id="apiTabsContent">
-                        <div class="tab-pane fade show active" id="meusDados-tab-pane" role="tabpanel" tabindex="0">
-                            <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
-                                                                                                                echo isset($apiResponses['meusDados']) ? json_encode($apiResponses['meusDados'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
-                                                                                                                ?></code></pre>
-                        </div>
-                        <div class="tab-pane fade" id="boletim-tab-pane" role="tabpanel" tabindex="0">
-                            <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
-                                                                                                                echo isset($apiResponses['boletim']) ? json_encode($apiResponses['boletim'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
-                                                                                                                ?></code></pre>
-                        </div>
-                        <div class="tab-pane fade" id="horarios-tab-pane" role="tabpanel" tabindex="0">
-                            <pre class="bg-light p-3 rounded" style="max-height: 70vh; overflow: auto;"><code><?php
-                                                                                                                echo isset($apiResponses['horarios']) ? json_encode($apiResponses['horarios'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : 'Dados não disponíveis';
-                                                                                                                ?></code></pre>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>
-                        Fechar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div> <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-    <script src="assets/day-selector.js"></script>
-    <script src="assets/notification.js"></script>
-    <script>
-        // Sistema de notificações Toast moderno
-        function showToast(message, type = 'success', duration = 5000) {
-            const bgColors = {
-                success: 'linear-gradient(to right, #10b981, #059669)',
-                warning: 'linear-gradient(to right, #f59e0b, #d97706)',
-                danger: 'linear-gradient(to right, #ef4444, #dc2626)',
-                info: 'linear-gradient(to right, #06b6d4, #0891b2)'
-            };
+                        const icons = {
+                            success: '<i class="fas fa-check-circle"></i>',
+                            warning: '<i class="fas fa-exclamation-circle"></i>',
+                            danger: '<i class="fas fa-exclamation-triangle"></i>',
+                            info: '<i class="fas fa-info-circle"></i>'
+                        };
 
-            const icons = {
-                success: '<i class="fas fa-check-circle"></i>',
-                warning: '<i class="fas fa-exclamation-circle"></i>',
-                danger: '<i class="fas fa-exclamation-triangle"></i>',
-                info: '<i class="fas fa-info-circle"></i>'
-            };
-
-            Toastify({
-                text: `${icons[type]} ${message}`,
-                duration: duration,
-                gravity: "top",
-                position: "right",
-                className: "toast-custom",
-                style: {
-                    background: bgColors[type],
-                    boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-                    borderRadius: "8px",
-                }
-            }).showToast();
-        }
-
-        // Inicialização dos elementos da interface
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar notificação de boas-vindas
-            setTimeout(() => {
-                showToast('Bem-vindo(a) ao SUPACO! Dados acadêmicos carregados.', 'success');
-            }, 1000);
-
-            // Inicializar seletor de dias
-            const daySelector = document.getElementById('daySelector');
-            if (daySelector) {
-                daySelector.addEventListener('change', function() {
-                    if (this.value) {
-                        window.location.href = `index.php?data=${this.value}`;
+                        Toastify({
+                            text: `${icons[type]} ${message}`,
+                            duration: duration,
+                            gravity: "top",
+                            position: "right",
+                            className: "toast-custom",
+                            style: {
+                                background: bgColors[type],
+                                boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+                                borderRadius: "8px",
+                            }
+                        }).showToast();
                     }
-                });
-            }
 
-            // Animações para itens do boletim
-            const disciplinaItems = document.querySelectorAll('.disciplina-item');
-            disciplinaItems.forEach((item, index) => {
-                item.classList.add('boletim-item');
-                item.style.animationDelay = `${0.1 + index * 0.05}s`;
-            });
-        });
+                    // Inicialização dos elementos da interface
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Mostrar notificação de boas-vindas
+                        setTimeout(() => {
+                            showToast('Bem-vindo(a) ao SUPACO! Dados acadêmicos carregados.', 'success');
+                        }, 1000);
 
-        // Inicialização do tema e eventos        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializa animações AOS
-            AOS.init({
-                duration: 800,
-                easing: 'ease-in-out',
-                once: true,
-                mirror: false
-            });
-
-            // Loading bar
-            const loadingBar = document.getElementById('loadingBar');
-            document.querySelectorAll('a').forEach(link => {
-                if (!link.getAttribute('target') && !link.dataset.bsToggle) {
-                    link.addEventListener('click', function(e) {
-                        if (link.href && !link.href.includes('#') && !e.ctrlKey && !e.metaKey) {
-                            loadingBar.style.display = 'block';
+                        // Inicializar seletor de dias
+                        const daySelector = document.getElementById('daySelector');
+                        if (daySelector) {
+                            daySelector.addEventListener('change', function() {
+                                if (this.value) {
+                                    window.location.href = `index.php?data=${this.value}`;
+                                }
+                            });
                         }
+
+                        // Animações para itens do boletim
+                        const disciplinaItems = document.querySelectorAll('.disciplina-item');
+                        disciplinaItems.forEach((item, index) => {
+                            item.classList.add('boletim-item');
+                            item.style.animationDelay = `${0.1 + index * 0.05}s`;
+                        });
                     });
-                }
-            });
 
-            // Tooltips inicialização
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl, {
-                    boundary: document.body
-                });
-            });
+                    // Inicialização do tema e eventos        
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Inicializa animações AOS
+                        AOS.init({
+                            duration: 800,
+                            easing: 'ease-in-out',
+                            once: true,
+                            mirror: false
+                        });
 
-            // Popovers inicialização
-            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-            popoverTriggerList.map(function(popoverTriggerEl) {
-                return new bootstrap.Popover(popoverTriggerEl);
-            });
-        });
+                        // Loading bar
+                        const loadingBar = document.getElementById('loadingBar');
+                        document.querySelectorAll('a').forEach(link => {
+                            if (!link.getAttribute('target') && !link.dataset.bsToggle) {
+                                link.addEventListener('click', function(e) {
+                                    if (link.href && !link.href.includes('#') && !e.ctrlKey && !e.metaKey) {
+                                        loadingBar.style.display = 'block';
+                                    }
+                                });
+                            }
+                        });
 
-        // Calculadora de Média
-        document.getElementById('calcMediaBtn').addEventListener('click', function() {
-            new bootstrap.Modal(document.getElementById('calcMediaModal')).show();
-        });
+                        // Tooltips inicialização
+                        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                        tooltipTriggerList.map(function(tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                                boundary: document.body
+                            });
+                        });
 
-        document.getElementById('calcularBtn').addEventListener('click', function() {
-            const nota1 = Number(document.getElementById('nota1').value) || 0;
-            const nota2 = Number(document.getElementById('nota2').value) || 0;
-            const nota3 = Number(document.getElementById('nota3').value) || 0;
-            const nota4 = Number(document.getElementById('nota4').value) || 0;
+                        // Popovers inicialização
+                        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+                        popoverTriggerList.map(function(popoverTriggerEl) {
+                            return new bootstrap.Popover(popoverTriggerEl);
+                        });
+                    });
 
-            const media = ((nota1 * 2) + (nota2 * 2) + (nota3 * 3) + (nota4 * 3)) / 10;
-            const resultado = document.getElementById('resultadoMedia');
+                    // Calculadora de Média
+                    document.getElementById('calcMediaBtn').addEventListener('click', function() {
+                        new bootstrap.Modal(document.getElementById('calcMediaModal')).show();
+                    });
 
-            const status = media >= 60 ? 'aprovado' : 'reprovado';
-            const statusClass = media >= 60 ? 'success' : 'danger';
-            const statusIcon = media >= 60 ? 'check-circle' : 'exclamation-circle';
+                    document.getElementById('calcularBtn').addEventListener('click', function() {
+                        const nota1 = Number(document.getElementById('nota1').value) || 0;
+                        const nota2 = Number(document.getElementById('nota2').value) || 0;
+                        const nota3 = Number(document.getElementById('nota3').value) || 0;
+                        const nota4 = Number(document.getElementById('nota4').value) || 0;
 
-            resultado.innerHTML = `
+                        const media = ((nota1 * 2) + (nota2 * 2) + (nota3 * 3) + (nota4 * 3)) / 10;
+                        const resultado = document.getElementById('resultadoMedia');
+
+                        const status = media >= 60 ? 'aprovado' : 'reprovado';
+                        const statusClass = media >= 60 ? 'success' : 'danger';
+                        const statusIcon = media >= 60 ? 'check-circle' : 'exclamation-circle';
+
+                        resultado.innerHTML = `
                 <div class="text-${statusClass}">
                     <i class="fas fa-${statusIcon} fa-2x mb-2"></i>
                     <div class="h2 mb-2">${media.toFixed(1)}</div>
@@ -1142,248 +1152,248 @@
                 </div>
             `;
 
-            resultado.className = `card-body p-4 text-center animate__animated animate__fadeIn`;
-        });
-    </script>
-    <div class="container mt-4">
-        <!-- Aqui vai o conteúdo específico de cada página -->
-        <?php if (isset($pageContent)) echo $pageContent; ?>
-    </div>
-    <!-- Modal de Ajuda sobre Frequência -->
-    <div class="modal fade" id="frequenciaHelpModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white border-0">
-                    <h5 class="modal-title">
-                        <i class="fas fa-question-circle me-2"></i>
-                        Entendendo sua Frequência
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        resultado.className = `card-body p-4 text-center animate__animated animate__fadeIn`;
+                    });
+                </script>
+                <div class="container mt-4">
+                    <!-- Aqui vai o conteúdo específico de cada página -->
+                    <?php if (isset($pageContent)) echo $pageContent; ?>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="mb-4">
-                        <h6 class="border-bottom pb-2 mb-2">Como calcular as faltas</h6>
-                        <p class="text-muted small">
-                            Para aprovação, você precisa ter no mínimo <strong>75% de frequência</strong> em cada disciplina.
-                            Isso significa que você pode faltar até <strong>25% da carga horária</strong> total da disciplina.
-                        </p>
-                        <div class="bg-light p-2 rounded small">
-                            <strong>Exemplo:</strong> Em uma disciplina de 80 horas, você pode faltar até 20 horas
-                            (25% de 80h = 20h).
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6 class="border-bottom pb-2 mb-2">O que significam as cores?</h6>
-                        <ul class="small list-unstyled">
-                            <li class="mb-2">
-                                <span class="badge bg-success bg-opacity-20 text-success px-3 py-1">
-                                    <i class="fas fa-check-circle me-1"></i> Verde
-                                </span>
-                                <span class="ms-2">Você pode faltar com segurança (mais de 3 faltas disponíveis)</span>
-                            </li>
-                            <li class="mb-2">
-                                <span class="badge bg-warning bg-opacity-20 text-warning px-3 py-1">
-                                    <i class="fas fa-exclamation-circle me-1"></i> Amarelo
-                                </span>
-                                <span class="ms-2">Alerta! Você tem 3 ou menos faltas disponíveis</span>
-                            </li>
-                            <li>
-                                <span class="badge bg-danger bg-opacity-20 text-danger px-3 py-1">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> Vermelho
-                                </span>
-                                <span class="ms-2">Risco de reprovação! Limite de faltas atingido ou excedido</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h6 class="border-bottom pb-2 mb-2">Como interpretar o painel</h6>
-                        <ul class="small">
-                            <li>
-                                <strong>Frequência atual:</strong> Seu percentual de presença nas aulas já ministradas
-                            </li>
-                            <li>
-                                <strong>Após falta:</strong> Como sua frequência ficaria se você faltasse mais um dia de aula
-                            </li>
-                            <li>
-                                <strong>Faltas utilizadas:</strong> Quantas faltas você já teve em relação ao máximo permitido
-                            </li>
-                            <li>
-                                <strong>Aulas dadas:</strong> Quantas aulas já foram ministradas do total previsto
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-                        <i class="fas fa-check me-1"></i>
-                        Entendi
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal da Calculadora de Frequência -->
-    <div class="modal fade" id="calculadoraFrequenciaModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white border-0">
-                    <h5 class="modal-title">
-                        <i class="fas fa-calculator me-2"></i>
-                        Calculadora de Frequência
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="calculadoraFrequenciaForm">
-                        <div class="mb-3">
-                            <label for="cargaHoraria" class="form-label">Carga horária total da disciplina (horas):</label>
-                            <input type="number" class="form-control" id="cargaHoraria" min="1" value="60" required>
-                            <div class="form-text">Geralmente 30h, 60h, 80h ou mais conforme seu curso.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="aulasDadas" class="form-label">Aulas já ministradas (horas):</label>
-                            <input type="number" class="form-control" id="aulasDadas" min="0" value="30" required>
-                            <div class="form-text">Quantas horas de aula já foram dadas até o momento.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="faltasAtuais" class="form-label">Faltas atuais (horas):</label>
-                            <input type="number" class="form-control" id="faltasAtuais" min="0" value="4" required>
-                            <div class="form-text">Quantas horas de aula você já faltou até agora.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="faltasAdicionais" class="form-label">Faltas a simular (horas):</label>
-                            <input type="number" class="form-control" id="faltasAdicionais" min="1" value="2" required>
-                            <div class="form-text">Quantas horas adicionais você pretende faltar.</div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-calculator me-1"></i>
-                            Calcular
-                        </button>
-                    </form>
-
-                    <div id="resultadoFrequencia" class="mt-4 d-none">
-                        <h6 class="border-bottom pb-2 mb-3">Resultado da Simulação</h6>
-                        <div class="row text-center">
-                            <div class="col-6 mb-3">
-                                <div class="small text-muted">Frequência Atual</div>
-                                <div id="freqAtual" class="h4 text-primary">93.3%</div>
+                <!-- Modal de Ajuda sobre Frequência -->
+                <div class="modal fade" id="frequenciaHelpModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white border-0">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-question-circle me-2"></i>
+                                    Entendendo sua Frequência
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="col-6 mb-3">
-                                <div class="small text-muted">Frequência Após Faltas</div>
-                                <div id="freqNova" class="h4">86.7%</div>
+                            <div class="modal-body p-4">
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2 mb-2">Como calcular as faltas</h6>
+                                    <p class="text-muted small">
+                                        Para aprovação, você precisa ter no mínimo <strong>75% de frequência</strong> em cada disciplina.
+                                        Isso significa que você pode faltar até <strong>25% da carga horária</strong> total da disciplina.
+                                    </p>
+                                    <div class="bg-light p-2 rounded small">
+                                        <strong>Exemplo:</strong> Em uma disciplina de 80 horas, você pode faltar até 20 horas
+                                        (25% de 80h = 20h).
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2 mb-2">O que significam as cores?</h6>
+                                    <ul class="small list-unstyled">
+                                        <li class="mb-2">
+                                            <span class="badge bg-success bg-opacity-20 text-success px-3 py-1">
+                                                <i class="fas fa-check-circle me-1"></i> Verde
+                                            </span>
+                                            <span class="ms-2">Você pode faltar com segurança (mais de 3 faltas disponíveis)</span>
+                                        </li>
+                                        <li class="mb-2">
+                                            <span class="badge bg-warning bg-opacity-20 text-warning px-3 py-1">
+                                                <i class="fas fa-exclamation-circle me-1"></i> Amarelo
+                                            </span>
+                                            <span class="ms-2">Alerta! Você tem 3 ou menos faltas disponíveis</span>
+                                        </li>
+                                        <li>
+                                            <span class="badge bg-danger bg-opacity-20 text-danger px-3 py-1">
+                                                <i class="fas fa-exclamation-triangle me-1"></i> Vermelho
+                                            </span>
+                                            <span class="ms-2">Risco de reprovação! Limite de faltas atingido ou excedido</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h6 class="border-bottom pb-2 mb-2">Como interpretar o painel</h6>
+                                    <ul class="small">
+                                        <li>
+                                            <strong>Frequência atual:</strong> Seu percentual de presença nas aulas já ministradas
+                                        </li>
+                                        <li>
+                                            <strong>Após falta:</strong> Como sua frequência ficaria se você faltasse mais um dia de aula
+                                        </li>
+                                        <li>
+                                            <strong>Faltas utilizadas:</strong> Quantas faltas você já teve em relação ao máximo permitido
+                                        </li>
+                                        <li>
+                                            <strong>Aulas dadas:</strong> Quantas aulas já foram ministradas do total previsto
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div id="barraFreq" class="progress-bar bg-success" style="width: 86.7%;"></div>
-                        </div>
-
-                        <div class="text-center">
-                            <div id="statusFreq" class="alert alert-success p-2">
-                                <i class="fas fa-check-circle me-1"></i>
-                                Você continuará com frequência suficiente
-                            </div>
-
-                            <div id="detalhesFreq" class="small text-muted mt-2">
-                                Máximo de faltas permitidas: <span id="maxFaltas">15h</span> (25% da carga horária)
-                                <br>
-                                Faltas após simulação: <span id="totalFaltas">6h</span> de <span id="maxFaltasRepeat">15h</span>
-                                <br>
-                                Você ainda pode faltar <span id="faltasRestantes">9h</span> sem reprovar
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                    <i class="fas fa-check me-1"></i>
+                                    Entendi
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Fechar
-                    </button>
+
+                <!-- Modal da Calculadora de Frequência -->
+                <div class="modal fade" id="calculadoraFrequenciaModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white border-0">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Calculadora de Frequência
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <form id="calculadoraFrequenciaForm">
+                                    <div class="mb-3">
+                                        <label for="cargaHoraria" class="form-label">Carga horária total da disciplina (horas):</label>
+                                        <input type="number" class="form-control" id="cargaHoraria" min="1" value="60" required>
+                                        <div class="form-text">Geralmente 30h, 60h, 80h ou mais conforme seu curso.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="aulasDadas" class="form-label">Aulas já ministradas (horas):</label>
+                                        <input type="number" class="form-control" id="aulasDadas" min="0" value="30" required>
+                                        <div class="form-text">Quantas horas de aula já foram dadas até o momento.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="faltasAtuais" class="form-label">Faltas atuais (horas):</label>
+                                        <input type="number" class="form-control" id="faltasAtuais" min="0" value="4" required>
+                                        <div class="form-text">Quantas horas de aula você já faltou até agora.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="faltasAdicionais" class="form-label">Faltas a simular (horas):</label>
+                                        <input type="number" class="form-control" id="faltasAdicionais" min="1" value="2" required>
+                                        <div class="form-text">Quantas horas adicionais você pretende faltar.</div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-calculator me-1"></i>
+                                        Calcular
+                                    </button>
+                                </form>
+
+                                <div id="resultadoFrequencia" class="mt-4 d-none">
+                                    <h6 class="border-bottom pb-2 mb-3">Resultado da Simulação</h6>
+                                    <div class="row text-center">
+                                        <div class="col-6 mb-3">
+                                            <div class="small text-muted">Frequência Atual</div>
+                                            <div id="freqAtual" class="h4 text-primary">93.3%</div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <div class="small text-muted">Frequência Após Faltas</div>
+                                            <div id="freqNova" class="h4">86.7%</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="progress mb-3" style="height: 8px;">
+                                        <div id="barraFreq" class="progress-bar bg-success" style="width: 86.7%;"></div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <div id="statusFreq" class="alert alert-success p-2">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Você continuará com frequência suficiente
+                                        </div>
+
+                                        <div id="detalhesFreq" class="small text-muted mt-2">
+                                            Máximo de faltas permitidas: <span id="maxFaltas">15h</span> (25% da carga horária)
+                                            <br>
+                                            Faltas após simulação: <span id="totalFaltas">6h</span> de <span id="maxFaltasRepeat">15h</span>
+                                            <br>
+                                            Você ainda pode faltar <span id="faltasRestantes">9h</span> sem reprovar
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i> Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Script para a calculadora de frequência -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calcForm = document.getElementById('calculadoraFrequenciaForm');
+                <!-- Script para a calculadora de frequência -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const calcForm = document.getElementById('calculadoraFrequenciaForm');
 
-            calcForm.addEventListener('submit', function(e) {
-                e.preventDefault();
+                        calcForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
 
-                // Obter os valores do formulário
-                const cargaHoraria = Number(document.getElementById('cargaHoraria').value);
-                const aulasDadas = Number(document.getElementById('aulasDadas').value);
-                const faltasAtuais = Number(document.getElementById('faltasAtuais').value);
-                const faltasAdicionais = Number(document.getElementById('faltasAdicionais').value);
+                            // Obter os valores do formulário
+                            const cargaHoraria = Number(document.getElementById('cargaHoraria').value);
+                            const aulasDadas = Number(document.getElementById('aulasDadas').value);
+                            const faltasAtuais = Number(document.getElementById('faltasAtuais').value);
+                            const faltasAdicionais = Number(document.getElementById('faltasAdicionais').value);
 
-                // Validações básicas
-                if (aulasDadas > cargaHoraria) {
-                    alert('As aulas dadas não podem ser maiores que a carga horária total.');
-                    return;
-                }
+                            // Validações básicas
+                            if (aulasDadas > cargaHoraria) {
+                                alert('As aulas dadas não podem ser maiores que a carga horária total.');
+                                return;
+                            }
 
-                if (faltasAtuais > aulasDadas) {
-                    alert('As faltas não podem ser maiores que as aulas já dadas.');
-                    return;
-                }
+                            if (faltasAtuais > aulasDadas) {
+                                alert('As faltas não podem ser maiores que as aulas já dadas.');
+                                return;
+                            }
 
-                // Cálculos de frequência
-                const maximoFaltas = Math.ceil(cargaHoraria * 0.25);
-                const totalFaltas = faltasAtuais + faltasAdicionais;
-                const faltasRestantes = Math.max(0, maximoFaltas - totalFaltas);
+                            // Cálculos de frequência
+                            const maximoFaltas = Math.ceil(cargaHoraria * 0.25);
+                            const totalFaltas = faltasAtuais + faltasAdicionais;
+                            const faltasRestantes = Math.max(0, maximoFaltas - totalFaltas);
 
-                const frequenciaAtual = ((aulasDadas - faltasAtuais) / aulasDadas) * 100;
-                const frequenciaNova = ((aulasDadas - totalFaltas) / aulasDadas) * 100;
+                            const frequenciaAtual = ((aulasDadas - faltasAtuais) / aulasDadas) * 100;
+                            const frequenciaNova = ((aulasDadas - totalFaltas) / aulasDadas) * 100;
 
-                // Definir status
-                let status = 'success';
-                let mensagem = 'Você continuará com frequência suficiente';
+                            // Definir status
+                            let status = 'success';
+                            let mensagem = 'Você continuará com frequência suficiente';
 
-                if (totalFaltas > maximoFaltas) {
-                    status = 'danger';
-                    mensagem = 'Você ultrapassará o limite de faltas!';
-                } else if ((maximoFaltas - totalFaltas) <= 3) {
-                    status = 'warning';
-                    mensagem = 'Você estará próximo ao limite de faltas!';
-                }
+                            if (totalFaltas > maximoFaltas) {
+                                status = 'danger';
+                                mensagem = 'Você ultrapassará o limite de faltas!';
+                            } else if ((maximoFaltas - totalFaltas) <= 3) {
+                                status = 'warning';
+                                mensagem = 'Você estará próximo ao limite de faltas!';
+                            }
 
-                // Atualizar a interface
-                document.getElementById('freqAtual').textContent = frequenciaAtual.toFixed(1) + '%';
-                document.getElementById('freqNova').textContent = Math.max(0, frequenciaNova).toFixed(1) + '%';
+                            // Atualizar a interface
+                            document.getElementById('freqAtual').textContent = frequenciaAtual.toFixed(1) + '%';
+                            document.getElementById('freqNova').textContent = Math.max(0, frequenciaNova).toFixed(1) + '%';
 
-                document.getElementById('freqNova').className = 'h4 text-' + status;
+                            document.getElementById('freqNova').className = 'h4 text-' + status;
 
-                document.getElementById('barraFreq').className = 'progress-bar bg-' + status;
-                document.getElementById('barraFreq').style.width = Math.max(0, Math.min(100, frequenciaNova)) + '%';
+                            document.getElementById('barraFreq').className = 'progress-bar bg-' + status;
+                            document.getElementById('barraFreq').style.width = Math.max(0, Math.min(100, frequenciaNova)) + '%';
 
-                document.getElementById('statusFreq').className = 'alert alert-' + status + ' p-2';
-                document.getElementById('statusFreq').innerHTML = `<i class="fas fa-${status === 'success' ? 'check' : 'exclamation'}-circle me-1"></i> ${mensagem}`;
+                            document.getElementById('statusFreq').className = 'alert alert-' + status + ' p-2';
+                            document.getElementById('statusFreq').innerHTML = `<i class="fas fa-${status === 'success' ? 'check' : 'exclamation'}-circle me-1"></i> ${mensagem}`;
 
-                document.getElementById('maxFaltas').textContent = maximoFaltas + 'h';
-                document.getElementById('maxFaltasRepeat').textContent = maximoFaltas + 'h';
-                document.getElementById('totalFaltas').textContent = totalFaltas + 'h';
-                document.getElementById('faltasRestantes').textContent = faltasRestantes + 'h';
+                            document.getElementById('maxFaltas').textContent = maximoFaltas + 'h';
+                            document.getElementById('maxFaltasRepeat').textContent = maximoFaltas + 'h';
+                            document.getElementById('totalFaltas').textContent = totalFaltas + 'h';
+                            document.getElementById('faltasRestantes').textContent = faltasRestantes + 'h';
 
-                // Mostrar resultados
-                document.getElementById('resultadoFrequencia').classList.remove('d-none');
-            });
-        });
+                            // Mostrar resultados
+                            document.getElementById('resultadoFrequencia').classList.remove('d-none');
+                        });
+                    });
 
-        // Inicializar biblioteca AOS para animações ao rolar
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-    </script>
+                    // Inicializar biblioteca AOS para animações ao rolar
+                    AOS.init({
+                        duration: 800,
+                        easing: 'ease-in-out',
+                        once: true
+                    });
+                </script>
 </body>
 
 </html>

@@ -1,0 +1,17 @@
+# Ignorar arquivo de configuração com credenciais
+config.php
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE/Editor
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos de dependências e cache
+/vendor/
+/node_modules/
+*.log
