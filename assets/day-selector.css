@@ -1,0 +1,64 @@
+/**
+ * Estilos para o seletor de dias
+ */
+
+.day-select-container {
+  position: relative;
+  margin-top: 10px;
+  max-width: 350px;
+}
+
+.day-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 6px 30px 6px 12px;
+  width: 100%;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.day-select:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.day-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+/* Estilização para as opções */
+.day-select option {
+  background-color: #fff;
+  color: #333;
+  padding: 10px;
+}
+
+.day-select option.text-warning {
+  color: #ffc107 !important;
+}
+
+.day-select option.text-danger {
+  color: #dc3545 !important;
+}
+
+.holiday-badge {
+  margin-left: 5px;
+  color: #dc3545;
+  font-size: 0.8em;
+}
