@@ -505,7 +505,6 @@ $pageTitle = 'Dashboard - IF calc';
 ob_start(); // Inicia o buffer de saída
 ?>
 
-<<<<<<< HEAD
 <div class="dashboard-container py-4">
     <div class="container">
         <!-- Cabeçalho do dashboard -->
@@ -588,7 +587,6 @@ ob_start(); // Inicia o buffer de saída
                 </div>
             </div>
         </div>
-=======
 <div class="container mt-4">
     <!-- Hero Section Moderno -->
     <div class="card border-0 mb-4 overflow-hidden bg-primary">
@@ -670,7 +668,6 @@ ob_start(); // Inicia o buffer de saída
             </div>
         </div>
     </div>
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
 
         <!-- Seção de Aulas -->
         <div class="row mb-4 animate-fade-in-up" style="animation-delay: 0.2s">

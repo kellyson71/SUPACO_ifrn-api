@@ -134,10 +134,8 @@ function exibirTabelaHorarios($horarios, $dias, $aulas)
         }
         echo '</tr>';
     }
-<<<<<<< HEAD
 
     echo '</tbody></table>';
-=======
     
     echo '</tbody></table></div>';
     echo '</div>';
@@ -219,7 +217,6 @@ function exibirTabelaHorarios($horarios, $dias, $aulas)
 function removeAcentos($string) {
     return strtolower(preg_replace(array("/(á|à|ã|â|ä)/","/(é|è|ê|ë)/","/(í|ì|î|ï)/","/(ó|ò|õ|ô|ö)/","/(ú|ù|û|ü)/","/(ñ)/","/(ç)/"),
                                   array("a","e","i","o","u","n","c"), $string));
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
 }
 ?>
 
