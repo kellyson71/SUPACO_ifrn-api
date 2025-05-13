@@ -84,7 +84,6 @@ if (!$token_data || !isset($token_data['access_token'])) {
     exit;
 }
 
-<<<<<<< HEAD
 // Salva o token
 $_SESSION['access_token'] = $token_data['access_token'];
 
@@ -166,10 +165,5 @@ if ($user_data && isset($user_data['id'])) {
     exit;
 }
 
-=======
-// Salva token e redireciona
-$_SESSION['access_token'] = $token_data['access_token'];
-error_log("Token salvo com sucesso: " . substr($token_data['access_token'], 0, 10) . '...');
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
 header('Location: index.php?auth=success');
 exit;

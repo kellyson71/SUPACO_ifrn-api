@@ -14,6 +14,8 @@
 require_once 'config.php';
 require_once 'horarios.php';
 require_once 'calendario.php';
+require_once 'api_utils.php';
+require_once 'status_falta.php';
 session_start();
 
 // Autenticação SUAP
@@ -145,11 +147,30 @@ function getSuapData($endpoint)
 
     if (curl_errno($ch)) {
         error_log("Erro CURL: " . curl_error($ch));
+        curl_close($ch);
+        return null;
     }
     curl_close($ch);
 
+    // Verifica se a resposta é válida
+    $jsonData = json_decode($response, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("Erro ao decodificar JSON: " . json_last_error_msg());
+        error_log("Resposta original: " . $response);
+
+        // Tentativa de limpar a resposta (remover caracteres inválidos)
+        $cleanResponse = preg_replace('/[\x00-\x1F\x7F]/u', '', $response);
+        $jsonData = json_decode($cleanResponse, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Segunda tentativa falhou: " . json_last_error_msg());
+            return null;
+        }
+    }
+
     // Verificar se ocorreu um erro de autenticação
-    return verificarRespostaAPI(json_decode($response, true), $httpcode);
+    return verificarRespostaAPI($jsonData, $httpcode);
 }
 
 /**
@@ -199,9 +220,8 @@ function calcularNotaNecessaria($notas, $pesos = [2, 2, 3, 3])
  */
 function getAulasDoDia($horarios, $dia)
 {
-    // Converte para o formato do SUAP (2-6)
     // No SUAP: 2=Segunda, 3=Terça, 4=Quarta, 5=Quinta, 6=Sexta
-    $diaSuap = $dia + 1;
+    // Não precisamos mais converter, pois já estamos usando o mesmo padrão
 
     $aulas = [];
 
@@ -209,11 +229,12 @@ function getAulasDoDia($horarios, $dia)
         if (!empty($disciplina['horarios_de_aula'])) {
             $horariosArray = parseHorario($disciplina['horarios_de_aula']);
             foreach ($horariosArray as $h) {
-                if ($h['dia'] == $diaSuap) {
+                if ($h['dia'] == $dia) {
                     $aulas[] = [
-                        'disciplina' => $disciplina['sigla'],
-                        'nome' => $disciplina['descricao'],
-                        'local' => $disciplina['locais_de_aula'][0] ?? '',
+                        'sigla' => $disciplina['sigla'] ?? '',
+                        'disciplina' => $disciplina['sigla'] ?? '',
+                        'descricao' => $disciplina['descricao'] ?? '',
+                        'locais' => isset($disciplina['locais_de_aula']) ? $disciplina['locais_de_aula'] : [],
                         'horario' => $h
                     ];
                 }
@@ -233,27 +254,38 @@ function getAulasDoDia($horarios, $dia)
  */
 function getAulasDeData($horarios, $data)
 {
-    // Se for final de semana (6=sábado, 7=domingo), retorna vazio
+    // Obtém o dia da semana (1 = segunda, 7 = domingo)
     $diaSemana = (int)$data->format('N');
-    if ($diaSemana > 5) {
+
+    // No SUAP: 2=Segunda, 3=Terça, 4=Quarta, 5=Quinta, 6=Sexta
+    // Converte do formato ISO (1-7) para SUAP (2-6)
+    $diaSemana = ($diaSemana == 7) ? 0 : $diaSemana + 1;
+
+    // Se for domingo, retorna array vazio
+    if ($diaSemana < 2 || $diaSemana > 6) {
         return [];
     }
 
-    // Converte para o formato do SUAP (2-6)
-    // No SUAP: 2=Segunda, 3=Terça, 4=Quarta, 5=Quinta, 6=Sexta
-    $diaSuap = $diaSemana + 1;
+    $aulas = [];
+    foreach ($horarios as $disciplina) {
+        if (!empty($disciplina['horarios_de_aula'])) {
+            $horariosParsed = parseHorario($disciplina['horarios_de_aula']);
 
-    // Verificar se é feriado
-    if (function_exists('verificarFeriado')) {
-        $feriado = verificarFeriado($data);
-        if ($feriado) {
-            // É feriado, não há aulas
-            return [];
+            foreach ($horariosParsed as $horario) {
+                if ($horario['dia'] == $diaSemana) {
+                    $aulas[] = [
+                        'sigla' => $disciplina['sigla'] ?? '',
+                        'descricao' => $disciplina['descricao'] ?? '',
+                        'turma' => $disciplina['id'] ?? '',
+                        'horario' => $horario,
+                        'locais' => !empty($disciplina['locais_de_aula']) ? $disciplina['locais_de_aula'] : []
+                    ];
+                }
+            }
         }
     }
 
-    // Usa a função existente para obter as aulas de um dia da semana específico
-    return getAulasDoDia($horarios, $diaSemana);
+    return $aulas;
 }
 
 /**
@@ -274,7 +306,10 @@ function getAulasAmanha($horarios)
         $amanha = 1;  // Segunda = 1 na notação do date('N')
     }
 
-    return getAulasDoDia($horarios, $amanha);
+    // Converte para o formato do SUAP (2-6), onde 2=Segunda
+    $amanhaSuap = ($amanha == 7) ? 0 : $amanha + 1;
+
+    return getAulasDoDia($horarios, $amanhaSuap);
 }
 
 /**
@@ -287,12 +322,16 @@ function getAulasHoje($horarios)
 {
     $hoje = date('N'); // (1-7, onde 1 é segunda)
 
-    // Se for final de semana (6-sábado ou 7-domingo), retorna vazio
-    if ($hoje > 5) {
-        return [];
-    }
+    // Converte para o formato do SUAP (2-6), onde 2=Segunda
+    $hojeSuap = $hoje + 1;
 
-    return getAulasDoDia($horarios, $hoje);
+    // Se for final de semana (6-sábado ou 7-domingo), retorna vazio
+    // Comentado para testes - Isso permitirá ver aulas mesmo nos fins de semana
+    // if ($hoje > 5) {
+    //     return [];
+    // }
+
+    return getAulasDoDia($horarios, $hojeSuap);
 }
 
 /**
@@ -322,20 +361,24 @@ function ordenarAulasPorHorario($aulasAmanha)
 
     $aulasOrdenadas = [];
     foreach ($aulasAmanha as $aula) {
-        foreach ($aula['horario']['aulas'] as $numeroAula) {
-            $chave = $aula['horario']['turno'] . $numeroAula;
-            if (isset($horarios[$chave])) {
-                $aulasOrdenadas[] = array_merge($aula, [
-                    'horario_detalhado' => $horarios[$chave]['hora'],
-                    'ordem' => $chave
-                ]);
+        if (isset($aula['horario']) && isset($aula['horario']['aulas']) && is_array($aula['horario']['aulas'])) {
+            foreach ($aula['horario']['aulas'] as $numeroAula) {
+                $chave = $aula['horario']['turno'] . $numeroAula;
+                if (isset($horarios[$chave])) {
+                    $aulaCompleta = $aula;
+                    $aulaCompleta['horario_detalhado'] = $horarios[$chave]['hora'];
+                    $aulaCompleta['ordem'] = $chave;
+                    $aulasOrdenadas[] = $aulaCompleta;
+                }
             }
         }
     }
 
-    usort($aulasOrdenadas, function ($a, $b) {
-        return strcmp($a['ordem'], $b['ordem']);
-    });
+    if (!empty($aulasOrdenadas)) {
+        usort($aulasOrdenadas, function ($a, $b) {
+            return strcmp($a['ordem'], $b['ordem']);
+        });
+    }
 
     return $aulasOrdenadas;
 }
@@ -444,7 +487,9 @@ $apiResponses = [
 
 if ($meusDados && isset($meusDados['matricula'])) {
     $boletim = getSuapData("minhas-informacoes/boletim/{$anoLetivo}/{$periodoLetivo}/");
-    $horarios = getSuapData("minhas-informacoes/turmas-virtuais/{$anoLetivo}/{$periodoLetivo}/");
+    $horarios = getSuapData("minhas-informacoes/turmas-virtuais/{$anoLetivo}/{$periodoLetivo}/");    // Limpa e corrige os dados antes de armazenar
+    $boletim = is_array($boletim) ? $boletim : [];
+    $horarios = is_array($horarios) ? sanitizarDadosAPI($horarios) : [];
 
     // Adiciona as respostas para depuração
     $apiResponses['boletim'] = $boletim;
@@ -452,7 +497,7 @@ if ($meusDados && isset($meusDados['matricula'])) {
 }
 
 // Preparação dos dados para a view
-$diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+$diasSemana = [1 => 'Segunda-feira', 2 => 'Terça-feira', 3 => 'Quarta-feira', 4 => 'Quinta-feira', 5 => 'Sexta-feira', 6 => 'Sábado', 7 => 'Domingo'];
 $hoje = date('N'); // 1 (Segunda) até 7 (Domingo)
 $amanha = ($hoje >= 5) ? 1 : $hoje + 1; // Ajustado para corresponder à lógica de getAulasAmanha()
 $diaHoje = $diasSemana[$hoje];
@@ -484,6 +529,7 @@ else if (isset($_GET['data'])) {
         // Verificar se é feriado
         $feriado = verificarFeriado($dataExibicao);
         if ($feriado) {
+            // É feriado, não há aulas
             $nomeDia .= ' - ' . $feriado . ' (Feriado)';
         }
     } else {
@@ -511,1592 +557,1490 @@ ob_start(); // Inicia o buffer de saída
         <div class="row mb-4">
             <div class="col-12">
                 <div class="dashboard-header d-flex justify-content-between align-items-center flex-wrap">
-                    <div class="dashboard-title">
-                        <h2 class="mb-0">Dashboard Acadêmico</h2>
-                        <p class="text-muted mb-0">Visão geral do seu desempenho acadêmico</p>
-                    </div>
-                    <div class="dashboard-actions">
-                        <div class="btn-group shadow-sm" role="group">
-                            <button type="button" class="btn btn-sm btn-light border" id="refreshDashboardBtn" title="Atualizar dados">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-light border" id="filterDashboardBtn" title="Filtrar dados">
-                                <i class="fas fa-filter"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-light border" id="customizeDashboardBtn" title="Personalizar dashboard">
-                                <i class="fas fa-columns"></i>
-                            </button>
-                        </div>
+                    <h1 class="h3 mb-3 mb-md-0">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                        Dashboard Acadêmico
+                    </h1>
+                    <div class="btn-group">
+                        <a href="index.php" class="btn btn-outline-primary active">
+                            <i class="fas fa-home"></i> Início
+                        </a>
+                        <a href="?view=boletim" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line"></i> Boletim
+                        </a>
+                        <a href="?view=horarios" class="btn btn-outline-primary">
+                            <i class="fas fa-calendar-week"></i> Horários
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Hero Section -->
-        <div class="card bg-primary text-white shadow-lg mb-4 rounded-3 border-0 animate-fade-in-up">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <?php if (isset($meusDados['url_foto_150x200'])): ?>
-                            <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>"
-                                class="rounded-circle border border-3 border-white shadow"
-                                style="width: 100px; height: 100px; object-fit: cover;">
-                        <?php else: ?>
-                            <i class="fas fa-user-circle" style="font-size: 5rem;"></i>
-                        <?php endif; ?>
-                    </div>
-                    <div class="col">
-                        <h2 class="display-6 mb-0">Olá, <?php echo htmlspecialchars($meusDados['nome_usual']); ?>!</h2>
-                        <p class="lead mb-0">
-                            <?php
-                            $vinculo = $meusDados['vinculo'] ?? [];
-                            $curso = '';
-
-                            if (isset($vinculo['curso'])) {
-                                $curso = $vinculo['curso'];
-                            } elseif (isset($vinculo['curso_turma'])) {
-                                $curso = $vinculo['curso_turma'];
-                            } elseif (isset($meusDados['curso'])) {
-                                $curso = $meusDados['curso'];
-                            }
-
-                            echo htmlspecialchars($meusDados['tipo_vinculo'] ?? 'Aluno');
-                            if ($curso) {
-                                echo ' • ' . htmlspecialchars($curso);
-                            }
-                            ?>
-                        </p>
-                        <div class="mt-2">
-                            <small>
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?> •
-                                Matrícula: <?php echo htmlspecialchars($meusDados['matricula']); ?>
-                            </small>
-                        </div>
-                    </div>
+        </div> <!-- Hero Section Moderno Unificado - Redesenhado -->
+        <div class="card border-0 mb-4 overflow-hidden animate-fade-in-up hero-card">
+            <div class="hero-wrapper position-relative"> <!-- Background com gradiente e padrão aprimorado -->
+                <div class="hero-bg position-absolute w-100 h-100"
+                    style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+                    background-image: url('assets/pattern.png');
+                    background-size: cover;
+                    opacity: 0.92;">
                 </div>
-            </div>
-            <div class="card-footer bg-primary-dark py-2 border-top border-primary-dark">
-                <div class="row text-center">
-                    <div class="col">
-                        <small>
-                            <i class="fas fa-clock me-1"></i>
-                            <?php echo date('d/m/Y H:i'); ?>
-                        </small>
-                    </div>
+
+                <!-- Overlay para melhorar o contraste -->
+                <div class="hero-overlay position-absolute w-100 h-100"
+                    style="background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%);
+                    z-index: 2;">
                 </div>
-            </div>
-        </div>
-<div class="container mt-4">
-    <!-- Hero Section Moderno -->
-    <div class="card border-0 mb-4 overflow-hidden bg-primary">
-        <div class="hero-wrapper position-relative">
-            <!-- Background com gradiente e padrão -->
-            <div class="hero-bg position-absolute w-100 h-100" 
-                 style="background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-                        background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
-                        background-size: 20px 20px;">
-            </div>
-            
-            <!-- Conteúdo do Hero -->
-            <div class="card-body position-relative py-5 text-white">
-                <div class="row align-items-center">
-                    <!-- Coluna da Logo -->
-                    <div class="col-lg-3 text-center mb-4 mb-lg-0">
-                        <div class="logo-container bg-white rounded-4 p-3 d-inline-block shadow-lg">
-                            <img src="assets/logo.png" 
-                                 alt="SUPACO Logo" 
-                                 class="img-fluid rounded-4" 
-                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                <!-- Conteúdo do Hero -->
+                <div class="card-body position-relative py-4 text-white">
+                    <div class="row align-items-center">
+                        <!-- Coluna do Status Diário -->
+                        <div class="col-lg-3 text-center mb-4 mb-lg-0"> <?php
+                                                                        // Determinar o status geral do dia
+                                                                        $statusDoDia = 'success'; // Padrão: pode faltar
+                                                                        $totalAulas = 0;
+                                                                        $aulasCriticas = 0;
+                                                                        $aulasAlerta = 0;                            // Busca aulas de hoje especificamente para o card de status
+                                                                        $aulasDeHoje = isset($horarios) ? getAulasHoje($horarios) : [];
+                                                                        $diaAtual = intval(date('N')); // 1 (Segunda) a 7 (Domingo)
+                                                                        $mostraDiaAlternativo = false;
+                                                                        $nomeDiaAulas = $diasSemana[$diaAtual];
+                                                                        $dataAulas = new DateTime();
+
+                                                                        // Para garantir que sempre tenhamos algo para mostrar mesmo se não houver aulas hoje
+                                                                        if (empty($aulasDeHoje) && isset($horarios) && !empty($horarios)) {
+                                                                            $mostraDiaAlternativo = true;
+
+                                                                            if ($diaAtual >= 6) {
+                                                                                // É fim de semana, mostra aulas da próxima segunda
+                                                                                $proximaSegunda = 2; // Segunda = 2 no formato SUAP
+                                                                                $aulasDeHoje = getAulasDoDia($horarios, $proximaSegunda);
+                                                                                $diasParaSegunda = $diaAtual == 7 ? 1 : 8 - $diaAtual;
+                                                                                $dataAulas = new DateTime();
+                                                                                $dataAulas->modify("+{$diasParaSegunda} days");
+                                                                                $nomeDiaAulas = "Segunda-feira";
+                                                                            } else {
+                                                                                // É dia de semana mas sem aulas, mostra o próximo dia com aulas
+                                                                                $diaEncontrado = false;
+                                                                                $diasAFente = 0;
+
+                                                                                // Procura aulas nos próximos dias
+                                                                                for ($i = 1; $i < 7; $i++) {
+                                                                                    $diaTeste = ($diaAtual + $i) % 7;
+                                                                                    if ($diaTeste == 0) $diaTeste = 7;
+
+                                                                                    // Converte para formato SUAP (2-6)
+                                                                                    $diaTeste = ($diaTeste == 7) ? 0 : $diaTeste + 1;
+
+                                                                                    if ($diaTeste >= 2 && $diaTeste <= 6) { // Formato SUAP: dias úteis
+                                                                                        $aulasTest = getAulasDoDia($horarios, $diaTeste);
+                                                                                        if (!empty($aulasTest)) {
+                                                                                            $aulasDeHoje = $aulasTest;
+                                                                                            $diasAFente = $i;
+                                                                                            $dataAulas = new DateTime();
+                                                                                            $dataAulas->modify("+{$diasAFente} days");
+                                                                                            $nomeDiaAulas = $diasSemana[($diaAtual + $i - 1) % 7 + 1];
+                                                                                            $diaEncontrado = true;
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                }
+
+                                                                                // Se não encontrou nos próximos dias, procura no ciclo semanal
+                                                                                if (!$diaEncontrado) {
+                                                                                    for ($dia = 2; $dia <= 6; $dia++) {
+                                                                                        $aulasDeHoje = getAulasDoDia($horarios, $dia);
+                                                                                        if (!empty($aulasDeHoje)) {
+                                                                                            // Converte de formato SUAP para formato ISO (1-7)
+                                                                                            $diaIso = $dia - 1;
+                                                                                            // Cálculo de quantos dias a frente
+                                                                                            $diasAFente = ($diaIso > $diaAtual) ?
+                                                                                                ($diaIso - $diaAtual) : (7 - $diaAtual + $diaIso);
+                                                                                            $dataAulas = new DateTime();
+                                                                                            $dataAulas->modify("+{$diasAFente} days");
+                                                                                            $nomeDiaAulas = $diasSemana[$diaIso];
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        $aulasHojeOrdenadas = ordenarAulasPorHorario($aulasDeHoje);
+
+                                                                        if (!empty($aulasHojeOrdenadas)) {
+                                                                            foreach ($aulasHojeOrdenadas as $aula) {
+                                                                                $totalAulas++;
+
+                                                                                // Encontra a disciplina correspondente no boletim
+                                                                                $statusAula = 'success';
+                                                                                if (isset($boletim)) {
+                                                                                    foreach ($boletim as $item) {
+                                                                                        if (isset($aula['sigla']) && strpos($item['disciplina'], $aula['sigla']) !== false) {
+                                                                                            $statusAula = podeFaltarAmanha($item);
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                }
+
+                                                                                if ($statusAula === 'danger') $aulasCriticas++;
+                                                                                if ($statusAula === 'warning') $aulasAlerta++;
+                                                                            }
+
+                                                                            // Determina o status geral do dia
+                                                                            if ($aulasCriticas > 0) {
+                                                                                $statusDoDia = 'danger';
+                                                                            } else if ($aulasAlerta > 0) {
+                                                                                $statusDoDia = 'warning';
+                                                                            }
+                                                                        }
+
+                                                                        $statusInfo = getStatusFaltaImagem($statusDoDia);
+                                                                        ?> <div class="status-diario-container">
+                                <div class="status-diario-card-modern">
+                                    <!-- Parte superior com título -->
+                                    <div class="status-card-header">
+                                        <h5 class="fw-bold mb-0">
+                                            <i class="fas fa-clipboard-check me-2 text-<?php echo $statusDoDia; ?>"></i>
+                                            Status do Dia
+                                        </h5>
+                                        <div class="date-indicator">
+                                            <i class="fas fa-calendar-day me-1"></i>
+                                            <?php
+                                            setlocale(LC_TIME, 'pt_BR', 'pt_BR.utf-8', 'portuguese');
+                                            $diasemana = array('Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado');
+                                            $data = date('Y-m-d');
+                                            $diasemana_numero = date('w', strtotime($data));
+                                            echo $diasemana[$diasemana_numero] . ', ' . date('d/m/Y');
+                                            ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- Parte central com a imagem -->
+                                    <div class="status-card-body">
+                                        <div class="status-image-wrapper">
+                                            <div class="status-bg-circle status-bg-<?php echo $statusDoDia; ?>"></div>
+                                            <img src="<?php echo $statusInfo['imagem']; ?>" alt="Status Diário"
+                                                class="status-icon status-pulse-<?php echo $statusDoDia; ?>">
+                                        </div>
+                                        <h3 class="status-title"><?php echo $statusInfo['descricao']; ?></h3>
+                                        <div class="status-detail">
+                                            <?php if ($totalAulas > 0): ?> <div class="status-count">
+                                                    <div class="d-flex align-items-center justify-content-center">
+                                                        <span class="status-badge status-badge-<?php echo $statusDoDia; ?>"><?php echo $totalAulas; ?></span>
+                                                        <span class="status-label">aulas hoje</span>
+                                                    </div>
+
+                                                    <?php if ($aulasCriticas > 0): ?>
+                                                        <div class="status-alert status-alert-danger">
+                                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                                            <?php echo $aulasCriticas; ?> aula(s) crítica(s)
+                                                        </div>
+                                                    <?php elseif ($aulasAlerta > 0): ?>
+                                                        <div class="status-alert status-alert-warning">
+                                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                                            <?php echo $aulasAlerta; ?> aula(s) com alerta
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <div class="status-alert status-alert-success">
+                                                            <i class="fas fa-check-circle me-2"></i>
+                                                            Todas as aulas tranquilas
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <!-- Detalhes explicativos sobre o status -->
+                                                <div class="status-info-detail">
+                                                    <?php if ($aulasCriticas > 0): ?>
+                                                        Algumas disciplinas já atingiram ou estão próximas do limite de faltas.
+                                                    <?php elseif ($aulasAlerta > 0): ?>
+                                                        Esteja atento às faltas em algumas disciplinas hoje.
+                                                    <?php else: ?>
+                                                        <?php echo $statusInfo['detalhes'] ?? 'Você ainda tem faltas disponíveis nas disciplinas de hoje.'; ?>
+                                                    <?php endif; ?>
+                                                </div> <?php if (!$mostraDiaAlternativo): ?>
+                                                    <!-- Mostra nota normal quando são aulas de hoje -->
+                                                    <div class="status-today-note mt-3">
+                                                        <i class="fas fa-calendar-day me-1"></i> Estas são suas aulas de hoje
+                                                        <span class="hoje-badge">HOJE</span>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <!-- Mostra nota indicando que são aulas de outro dia -->
+                                                    <div class="status-today-note mt-3">
+                                                        <i class="fas fa-calendar-alt me-1"></i> Exibindo aulas de
+                                                        <strong class="text-primary"><?php echo $nomeDiaAulas; ?> (<?php echo $dataAulas->format('d/m'); ?>)</strong>
+                                                    </div>
+                                                    <div class="status-alternate-day-info">
+                                                        <?php if (intval(date('N')) >= 6): ?>
+                                                            <i class="fas fa-info-circle me-1"></i> Sem aulas hoje (fim de semana)
+                                                        <?php elseif (verificarFeriado(new DateTime())): ?>
+                                                            <i class="fas fa-info-circle me-1"></i> Hoje é feriado
+                                                        <?php else: ?>
+                                                            <i class="fas fa-info-circle me-1"></i> Sem aulas programadas para hoje
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+
+
+                                            <?php else: ?> <div class="status-count">
+                                                    <div class="status-alert status-alert-info">
+                                                        <i class="fas fa-info-circle me-2 fa-pulse"></i>
+                                                        Sem aulas hoje
+                                                    </div>
+                                                </div>
+                                                <div class="status-info-detail">
+                                                    <?php
+                                                    $diaAtual = intval(date('N'));
+                                                    if ($diaAtual >= 6): // É fim de semana
+                                                    ?>
+                                                        <strong>Hoje é <?php echo $diasSemana[$diaAtual]; ?>.</strong> Aproveite o final de semana!
+                                                    <?php elseif (verificarFeriado(new DateTime())): // É feriado
+                                                        $nomeFeriado = verificarFeriado(new DateTime());
+                                                    ?>
+                                                        <strong>Hoje é feriado:</strong> <?php echo $nomeFeriado; ?>. Aproveite o descanso!
+                                                    <?php else: ?>
+                                                        <strong>Dia sem aulas programadas.</strong> Aproveite para estudar ou descansar!
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="status-today-note mt-3">
+                                                    <i class="fas fa-calendar-alt me-1"></i> Próximo dia de aulas:
+                                                    <strong class="text-primary">
+                                                        <?php
+                                                        $proxDia = $diaAtual;
+                                                        // Encontra o próximo dia útil
+                                                        while (++$proxDia % 7 > 5) {
+                                                        }
+                                                        $proxDiaData = new DateTime();
+                                                        $diasAvancar = ($proxDia % 7) - $diaAtual;
+                                                        if ($diasAvancar <= 0) $diasAvancar += 7;
+                                                        $proxDiaData->modify("+{$diasAvancar} days");
+                                                        echo $diasSemana[$proxDia % 7 ?: 7] . ' (' . $proxDiaData->format('d/m') . ')';
+                                                        ?>
+                                                    </strong>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <!-- Rodapé com ícone -->
+                                    <div class="status-card-footer">
+                                        <i class="fas <?php echo $statusInfo['icone']; ?> status-footer-icon status-icon-<?php echo $statusDoDia; ?>"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Coluna do Conteúdo -->
-                    <div class="col-lg-9 text-white">
-                        <div class="text-shadow">
-                            <h1 class="display-4 fw-bold mb-2">
-                                SUPACO
-                                <span class="badge bg-white text-primary fs-6 align-middle ms-2">
-                                    Beta
-                                </span>
-                            </h1>
-                            <h2 class="h3 mb-3">
-                                Sistema Útil Pra Aluno Cansado e Ocupado
-                            </h2>
-                            <p class="lead mb-4">
-                                <i class="fas fa-quote-left fa-sm me-2"></i>
-                                Porque até super-heróis precisam de uma ajudinha para sobreviver ao semestre!
-                                <i class="fas fa-quote-right fa-sm ms-2"></i>
-                            </p>
-                            
-                            <!-- Status do Usuário -->
-                            <?php if (isset($_SESSION['access_token']) && isset($meusDados)): ?>
-                                <div class="d-flex align-items-center bg-white bg-opacity-25 backdrop-blur rounded-3 p-3 hero-user-info">
+
+                        <!-- Coluna das Informações do Usuário -->
+                        <div class="col-lg-6">
+                            <div class="user-profile-container bg-white bg-opacity-10 backdrop-blur-sm rounded-4 p-4">
+                                <div class="d-flex align-items-center flex-column flex-md-row">
                                     <?php if (isset($meusDados['url_foto_150x200'])): ?>
-                                        <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>" 
-                                             class="rounded-circle border border-3 border-white shadow" 
-                                             style="width: 60px; height: 60px; object-fit: cover;">
-                                    <?php endif; ?>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-2">
-                                            <?php echo htmlspecialchars($meusDados['nome_usual']); ?>
-                                        </h6>
-                                        <div class="badges-wrapper">
-                                            <span class="badge bg-white bg-opacity-25">
+                                        <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>"
+                                            alt="Foto de perfil"
+                                            class="rounded-circle border border-3 border-white shadow me-3"
+                                            style="width: 80px; height: 80px; object-fit: cover;">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow me-3"
+                                            style="width: 80px; height: 80px;">
+                                            <i class="fas fa-user-graduate fa-2x"></i>
+                                        </div>
+                                    <?php endif; ?> <div class="ms-md-3 text-center text-md-start hero-text-container">
+                                        <h2 class="h3 mb-0 fw-bold text-white">
+                                            <?php echo isset($meusDados['nome_usual']) ? htmlspecialchars($meusDados['nome_usual']) : 'Estudante'; ?>
+                                        </h2>
+                                        <div class="d-flex flex-wrap mt-2 gap-2 justify-content-center justify-content-md-start">
+                                            <div class="badge bg-success fs-7 px-3 py-2">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                <?php echo isset($meusDados['vinculo']['situacao']) ? htmlspecialchars($meusDados['vinculo']['situacao']) : 'Estudante Ativo'; ?>
+                                            </div>
+                                            <div class="badge bg-white text-primary fs-7 px-3 py-2">
                                                 <i class="fas fa-id-card me-1"></i>
-                                                <?php echo htmlspecialchars($meusDados['matricula']); ?>
-                                            </span>
-                                            <span class="badge bg-white bg-opacity-25">
-                                                <i class="fas fa-calendar me-1"></i>
-                                                <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>
-                                            </span>
-                                            <a href="logout.php" class="btn btn-sm btn-light">
-                                                <i class="fas fa-sign-out-alt"></i> Sair
-                                            </a>
+                                                <?php echo isset($meusDados['matricula']) ? htmlspecialchars($meusDados['matricula']) : ''; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex flex-wrap mt-2 gap-2 justify-content-center justify-content-md-start">
+                                            <?php if (isset($meusDados['vinculo']['curso'])): ?>
+                                                <div class="badge bg-white text-primary fs-7 px-3 py-2">
+                                                    <i class="fas fa-graduation-cap me-1"></i>
+                                                    <?php echo htmlspecialchars($meusDados['vinculo']['curso']); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div class="badge bg-white text-primary fs-7 px-3 py-2">
+                                                <i class="fas fa-school me-1"></i>
+                                                <?php echo isset($meusDados['vinculo']['campus']) ? htmlspecialchars($meusDados['vinculo']['campus']) : 'Campus'; ?>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <div class="badge bg-white bg-opacity-90 text-primary py-2 px-3 fs-7">
+                                                <i class="fas fa-calendar-alt me-2"></i>
+                                                <span class="fw-bold">Período <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna do Logo e Botões -->
+                        <div class="col-lg-3 mt-4 mt-lg-0">
+                            <div class="d-flex flex-column justify-content-between h-100">
+                                <div class="text-center text-lg-end mb-4">
+                                    <div class="d-inline-block bg-white rounded-4 p-3 shadow-lg mb-3 border border-2 border-white">
+                                        <img src="assets/logo.png"
+                                            alt="SUPACO Logo"
+                                            class="img-fluid rounded-3"
+                                            style="width: 80px; height: 80px; object-fit: cover;">
+                                    </div>
+                                    <h2 class="h3 text-white mb-0 hero-text-container d-inline-block px-3 py-2">
+                                        SUPACO <span class="badge bg-white text-primary fs-6 align-middle ms-1">Beta</span>
+                                    </h2>
+                                    <p class="text-white mb-3 bg-dark bg-opacity-50 d-inline-block py-1 px-2 rounded">
+                                        <small>Sistema Útil Pra Aluno Cansado e Ocupado</small>
+                                    </p>
+                                </div>
+
+                                <div class="d-flex flex-row flex-lg-column justify-content-center gap-2 mb-3">
+                                    <a href="index.php" class="btn btn-light">
+                                        <i class="fas fa-home me-2"></i> Dashboard
+                                    </a>
+                                    <a href="logout.php" class="btn btn-outline-light">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Sair
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Métricas e estatísticas do usuário -->
+                <div class="card-footer py-3 border-top border-white border-opacity-25 text-white" style="background-color: rgba(3, 37, 76, 0.9); position: relative; z-index: 5;">
+                    <div class="row">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-white bg-opacity-25 p-2 rounded-circle me-3 stats-icon-pulse">
+                                    <i class="fas fa-graduation-cap text-white"></i>
+                                </div>
+                                <div class="stats-text-container">
+                                    <h6 class="mb-0 fw-bold"><?php echo isset($boletim) ? count($boletim) : '0'; ?></h6>
+                                    <small class="text-white-50">Disciplinas</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-white bg-opacity-25 p-2 rounded-circle me-3 stats-icon-pulse">
+                                    <i class="fas fa-calendar-check text-white"></i>
+                                </div>
+                                <div class="stats-text-container">
+                                    <h6 class="mb-0 fw-bold">
+                                        <?php
+                                        // Agora usamos nossa variável específica para o card de status
+                                        echo $totalAulas;
+                                        ?>
+                                    </h6>
+                                    <small class="text-white-50">Aulas Hoje</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-white bg-opacity-25 p-2 rounded-circle me-3 stats-icon-pulse">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <div class="stats-text-container">
+                                    <h6 class="mb-0 fw-bold"><?php echo date('H:i'); ?></h6>
+                                    <small class="text-white-50">Atualização</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-4">
+
+            <!-- Resumo de disciplinas -->
+            <div class="animate-fade-in-up" style="animation-delay: 0.4s">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-book me-2"></i> Resumo de Disciplinas</h5>
+                            <button class="btn btn-sm btn-light" id="btnGraficoDesempenho">
+                                <i class="fas fa-chart-bar me-1"></i> Gráficos
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Disciplina</th>
+                                        <th class="text-center">Notas</th>
+                                        <th class="text-center">Faltas</th>
+                                        <th class="text-center">Frequência</th>
+                                        <th class="text-center">Simulação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (isset($boletim) && !empty($boletim)): ?>
+                                        <?php foreach ($boletim as $disciplina): ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-bold"><?php echo htmlspecialchars(preg_replace('/^.*? - /', '', $disciplina['disciplina'])); ?></div>
+                                                    <small class="text-muted"><?php echo preg_replace('/ - .*$/', '', $disciplina['disciplina']); ?></small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="nota-valor">
+                                                        <?php if ($disciplina['media_disciplina'] !== null): ?>
+                                                            <span class="<?php echo $disciplina['media_disciplina'] < 60 ? 'text-danger' : 'text-success'; ?>">
+                                                                <?php echo number_format($disciplina['media_disciplina'], 1); ?>
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">--</span>
+                                                        <?php endif; ?>
+                                                    </div>
+
+                                                    <div class="small text-muted">
+                                                        <?php
+                                                        for ($i = 1; $i <= 4; $i++) {
+                                                            $nota = isset($disciplina["nota_etapa_{$i}"]['nota']) ? $disciplina["nota_etapa_{$i}"]['nota'] : null;
+                                                            if ($nota !== null) {
+                                                                echo "<span class='nota-bimestre'>" . number_format($nota, 1) . "</span>";
+                                                            } else {
+                                                                echo "<span class='nota-bimestre nota-pendente'>--</span>";
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php
+                                                    $totalFaltas = $disciplina['numero_faltas'];
+                                                    $maximoFaltas = ceil($disciplina['carga_horaria'] * 0.25);
+                                                    $classFaltas = 'text-success';
+
+                                                    if ($totalFaltas / $maximoFaltas > 0.8) {
+                                                        $classFaltas = 'text-danger';
+                                                    } else if ($totalFaltas / $maximoFaltas > 0.5) {
+                                                        $classFaltas = 'text-warning';
+                                                    }
+                                                    ?>
+                                                    <div class="<?php echo $classFaltas; ?>">
+                                                        <?php echo $totalFaltas; ?> / <?php echo $maximoFaltas; ?>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php
+                                                    $frequencia = $disciplina['percentual_carga_horaria_frequentada'];
+                                                    $classFreq = 'text-success';
+
+                                                    if ($frequencia < 75) {
+                                                        $classFreq = 'text-danger';
+                                                    } else if ($frequencia < 85) {
+                                                        $classFreq = 'text-warning';
+                                                    }
+                                                    ?>
+                                                    <div class="<?php echo $classFreq; ?> fw-bold">
+                                                        <?php echo number_format($frequencia, 1); ?>%
+                                                    </div>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        <div class="progress-bar bg-<?php echo $frequencia < 75 ? 'danger' : ($frequencia < 85 ? 'warning' : 'success'); ?>"
+                                                            role="progressbar"
+                                                            style="width: <?php echo min($frequencia, 100); ?>%"
+                                                            aria-valuemin="0"
+                                                            aria-valuemax="100"></div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="nota-simulacao" data-disciplina-id="<?php echo $disciplina['codigo_diario']; ?>">
+                                                        <?php
+                                                        // Calcular nota necessária
+                                                        $notaNecessaria = calcularNotaNecessaria($disciplina);
+                                                        if ($notaNecessaria !== null):
+                                                        ?>
+                                                            <input type="text"
+                                                                class="nota-input"
+                                                                placeholder="<?php echo number_format($notaNecessaria, 1); ?>"
+                                                                title="Nota mínima necessária para aprovação"
+                                                                data-bs-toggle="tooltip">
+                                                            <small class="d-block text-muted">
+                                                                Min: <?php echo number_format($notaNecessaria, 1); ?>
+                                                            </small>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-<?php echo ($disciplina['media_disciplina'] >= 60) ? 'success' : 'danger'; ?>">
+                                                                <?php echo ($disciplina['media_disciplina'] >= 60) ? 'Aprovado' : 'Reprovado'; ?>
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3">
+                                                <div class="text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Dados do boletim não disponíveis
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Aulas -->
+            <div class="row mb-4 animate-fade-in-up" style="animation-delay: 0.2s">
+                <div class="col-md-8">
+                    <div class="card h-100 shadow-sm glass-effect">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar-day me-2"></i>
+                                        Aulas por Dia
+                                    </h5>
+                                    <span class="badge bg-white text-primary ms-3">
+                                        <?php echo $nomeDia; ?>
+                                    </span>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a href="?dia=hoje" class="btn btn-sm <?php echo $mostrarDia === 'hoje' ? 'btn-light' : 'btn-outline-light'; ?>">
+                                        <i class="fas fa-calendar-day me-1"></i>Hoje
+                                    </a>
+                                    <a href="?dia=amanha" class="btn btn-sm <?php echo $mostrarDia === 'amanha' ? 'btn-light' : 'btn-outline-light'; ?>">
+                                        <i class="fas fa-calendar-plus me-1"></i>Amanhã
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Seletor de dias moderno -->
+                            <div class="day-select-container mt-3">
+                                <select id="daySelector" class="day-select form-select form-select-sm bg-transparent text-white border-light">
+                                    <option value="" disabled selected>Selecionar dia...</option>
+                                    <?php
+                                    // Gerar opções para os próximos 14 dias (2 semanas)
+                                    $dataInicio = new DateTime();
+                                    for ($i = 0; $i < 14; $i++) {
+                                        $data = clone $dataInicio;
+                                        $data->modify("+$i days");
+                                        $valor = $data->format('Y-m-d');
+
+                                        // Verificar se é final de semana (6=sábado, 7=domingo)
+                                        $diaSemana = (int)$data->format('N');
+                                        $classeData = '';
+
+                                        // Formatar a data para exibição
+                                        $dataFormatada = $data->format('d/m');
+                                        $nomeDiaSemana = $diasSemana[$diaSemana];
+
+                                        // Verificar se é feriado
+                                        $feriado = verificarFeriado($data);
+                                        $feriadoTag = $feriado ? ' <span class="holiday-badge"><i class="fas fa-star"></i>' . htmlspecialchars($feriado) . '</span>' : '';
+
+                                        // Classe para destacar finais de semana e feriados
+                                        if ($diaSemana > 5) {
+                                            $classeData = 'text-warning'; // Final de semana
+                                        } else if ($feriado) {
+                                            $classeData = 'text-danger'; // Feriado
+                                        }
+
+                                        echo '<option value="' . $valor . '" class="' . $classeData . '">';
+                                        echo $dataFormatada . ' - ' . $nomeDiaSemana . $feriadoTag;
+                                        echo '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <?php
+                            // Seleciona os horários baseado no dia selecionado
+                            $aulasAExibir = [];
+
+                            if ($mostrarDia === 'hoje') {
+                                $aulasAExibir = isset($horarios) ? getAulasHoje($horarios) : [];
+                            } else if ($mostrarDia === 'data' && $dataExibicao) {
+                                $aulasAExibir = isset($horarios) ? getAulasDeData($horarios, $dataExibicao) : [];
+                            } else {
+                                // Padrão: amanhã
+                                $aulasAExibir = isset($horarios) ? getAulasAmanha($horarios) : [];
+                            }
+
+                            // Ordena as aulas por horário
+                            $aulasOrdenadas = ordenarAulasPorHorario($aulasAExibir);
+
+                            // Se não há aulas no dia selecionado
+                            if (empty($aulasOrdenadas)):
+                            ?>
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                                    </div>
+                                    <h4>Nenhuma aula encontrada</h4>
+                                    <p class="text-muted">
+                                        <?php if ($mostrarDia === 'hoje' && (int)date('N') > 5): ?>
+                                            Hoje é final de semana. Aproveite para descansar!
+                                        <?php elseif ($mostrarDia === 'amanha' && $amanha == 1): ?>
+                                            Amanhã é segunda-feira. Prepare-se para a semana! <?php elseif ($mostrarDia === 'data' && isset($dataExibicao)): ?>
+                                            <?php $feriadoNome = verificarFeriado($dataExibicao); ?>
+                                            <?php if ($feriadoNome): ?>
+                                                É feriado de <?php echo htmlspecialchars($feriadoNome); ?>. Aproveite!
+                                            <?php else: ?>
+                                                Não há aulas programadas para este dia.
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            Não há aulas programadas para este dia.
+                                        <?php endif; ?>
+                                    </p>
+                                </div> <?php else: ?> <!-- Lista de aulas do dia com indicadores visuais unificados -->
+                                <div class="aulas-list">
+                                    <?php
+                                        // Usar a variável de status do dia que já definimos no hero section
+                                        foreach ($aulasOrdenadas as $aula):
+                                            // Encontra a disciplina correspondente no boletim para calcular frequência
+                                            $disciplinaBoletim = null;
+                                            $impactoFalta = null;
+                                            $podeFaltar = 'danger';
+
+                                            if (isset($boletim)) {
+                                                foreach ($boletim as $item) {
+                                                    if (isset($aula['sigla']) && strpos($item['disciplina'], $aula['sigla']) !== false) {
+                                                        $disciplinaBoletim = $item;
+                                                        $impactoFalta = calcularImpactoFalta($item);
+                                                        $podeFaltar = podeFaltarAmanha($item);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                    ?>
+
+                                        <div class="aula-item mb-3 p-3 border rounded-3 shadow-sm bg-white border-start border-4 border-<?php echo $podeFaltar; ?>">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h5 class="mb-1"><?php echo isset($aula['descricao']) ? htmlspecialchars($aula['descricao']) : htmlspecialchars($aula['disciplina'] ?? 'Aula'); ?></h5>
+                                                    <div class="aula-details">
+                                                        <span class="badge bg-primary me-2">
+                                                            <i class="fas fa-clock me-1"></i> <?php echo $aula['horario']['turno']; ?><?php echo implode(',', $aula['horario']['aulas']); ?>
+                                                            (<?php echo isset($aula['horario_detalhado']) ? $aula['horario_detalhado'] : ''; ?>)
+                                                        </span>
+                                                        <span class="badge bg-secondary me-2">
+                                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                                            <?php
+                                                            if (isset($aula['locais']) && is_array($aula['locais']) && !empty($aula['locais'])) {
+                                                                echo htmlspecialchars(implode(', ', $aula['locais']));
+                                                            } else if (isset($aula['local']) && !empty($aula['local'])) {
+                                                                echo htmlspecialchars($aula['local']);
+                                                            } else {
+                                                                echo 'Local não definido';
+                                                            }
+                                                            ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="ms-2">
+                                                    <span class="badge bg-<?php echo $podeFaltar; ?>">
+                                                        <?php if ($podeFaltar === 'success'): ?>
+                                                            <i class="fas fa-check-circle me-1"></i> Pode faltar
+                                                        <?php elseif ($podeFaltar === 'warning'): ?>
+                                                            <i class="fas fa-exclamation-triangle me-1"></i> Cuidado
+                                                        <?php else: ?>
+                                                            <i class="fas fa-times-circle me-1"></i> Evite faltar
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <?php if ($impactoFalta && isset($impactoFalta['faltas_restantes'])): ?>
+                                                <div class="mt-2 small">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <span class="text-muted">Faltas: <?php echo $impactoFalta['faltas_atuais']; ?> de <?php echo $impactoFalta['maximo_faltas']; ?> permitidas</span>
+                                                        <span class="text-<?php echo $podeFaltar; ?>"><?php echo $impactoFalta['faltas_restantes']; ?> faltas restantes</span>
+                                                    </div>
+                                                    <div class="progress" style="height: 5px;">
+                                                        <div class="progress-bar bg-<?php echo $podeFaltar; ?>" role="progressbar" style="width: <?php echo $impactoFalta['proporcao_faltas']; ?>%"></div>
+                                                    </div>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna lateral -->
+                <div class="col-md-4 mt-4 mt-md-0">
+                    <!-- Widget de disciplinas críticas -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="m-0"><i class="fas fa-exclamation-triangle me-2"></i> Disciplinas críticas</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php
+                            $disciplinasCriticas = [];
+                            if (isset($boletim)) {
+                                foreach ($boletim as $disciplina) {
+                                    if (
+                                        $disciplina['percentual_carga_horaria_frequentada'] < 85 ||
+                                        ($disciplina['media_disciplina'] !== null && $disciplina['media_disciplina'] < 60)
+                                    ) {
+                                        $disciplinasCriticas[] = $disciplina;
+                                    }
+                                }
+                            }
+
+                            if (empty($disciplinasCriticas)):
+                            ?>
+                                <div class="text-center py-3">
+                                    <div class="mb-2">
+                                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                                    </div>
+                                    <p class="mb-0">Nenhuma disciplina em situação crítica.</p>
+                                </div>
                             <?php else: ?>
-                                <div class="alert bg-white bg-opacity-25 backdrop-blur border-0 text-white d-inline-flex align-items-center" role="alert">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Faça login com suas credenciais do SUAP para começar
+                                <div class="list-group">
+                                    <?php foreach ($disciplinasCriticas as $disciplina): ?>
+                                        <div class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1"><?php echo htmlspecialchars(preg_replace('/^.*? - /', '', $disciplina['disciplina'])); ?></h6>
+                                                <small>
+                                                    <?php if ($disciplina['percentual_carga_horaria_frequentada'] < 85): ?>
+                                                        <span class="badge bg-danger">Frequência baixa</span>
+                                                    <?php endif; ?>
+                                                    <?php if ($disciplina['media_disciplina'] !== null && $disciplina['media_disciplina'] < 60): ?>
+                                                        <span class="badge bg-warning text-dark">Nota baixa</span>
+                                                    <?php endif; ?>
+                                                </small>
+                                            </div>
+                                            <div class="small mt-1">
+                                                <?php if ($disciplina['percentual_carga_horaria_frequentada'] < 85): ?>
+                                                    <div class="mb-1">
+                                                        <span class="text-muted">Frequência: </span>
+                                                        <span class="text-danger"><?php echo number_format($disciplina['percentual_carga_horaria_frequentada'], 1); ?>%</span>
+                                                    </div>
+                                                <?php endif; ?>
+
+                                                <?php if ($disciplina['media_disciplina'] !== null): ?>
+                                                    <div>
+                                                        <span class="text-muted">Média atual: </span>
+                                                        <span class="<?php echo $disciplina['media_disciplina'] < 60 ? 'text-danger' : 'text-success'; ?>">
+                                                            <?php echo number_format($disciplina['media_disciplina'], 1); ?>
+                                                        </span>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Widget de próximos feriados -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="m-0"><i class="fas fa-calendar-alt me-2"></i> Próximos feriados</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php
+                            $proximosFeriados = [];                            // Implementação para mostrar os próximos feriados
+                            $dataAtual = new DateTime();
+                            $anoAtual = (int)$dataAtual->format('Y');
+
+                            // Obter feriados do ano atual e do próximo
+                            $feriadosAnoAtual = listarTodosFeriados($anoAtual);
+                            $feriadosProximoAno = listarTodosFeriados($anoAtual + 1);
+                            $todosFeriados = array_merge($feriadosAnoAtual, $feriadosProximoAno);
+
+                            $proximosFeriados = [];
+
+                            // Filtra apenas os feriados futuros
+                            foreach ($todosFeriados as $dataStr => $nome) {
+                                $dataFeriado = new DateTime($dataStr);
+                                if ($dataFeriado >= $dataAtual) {
+                                    $proximosFeriados[] = [
+                                        'nome' => $nome,
+                                        'data' => $dataFeriado
+                                    ];
+                                }
+                            }
+
+                            // Ordenar por data (mais próximo primeiro)
+                            usort($proximosFeriados, function ($a, $b) {
+                                return $a['data'] <=> $b['data'];
+                            });
+
+                            // Limitar a 3 feriados
+                            $proximosFeriados = array_slice($proximosFeriados, 0, 3);
+
+                            if (empty($proximosFeriados)):
+                            ?>
+                                <div class="text-center py-3">
+                                    <p class="mb-0">Nenhum feriado próximo encontrado.</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="list-group list-group-flush">
+                                    <?php foreach ($proximosFeriados as $feriado): ?>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold"><?php echo htmlspecialchars($feriado['nome']); ?></div>
+                                                <small class="text-muted">
+                                                    <?php echo $feriado['data']->format('d/m/Y'); ?> (<?php echo $diasSemana[(int)$feriado['data']->format('N')]; ?>)
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">
+                                                <?php
+                                                $hoje = new DateTime();
+                                                $diff = $hoje->diff($feriado['data'])->days;
+                                                echo $diff == 0 ? 'Hoje' : ($diff == 1 ? 'Amanhã' : "Em $diff dias");
+                                                ?>
+                                            </span>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-        <!-- Seção de Aulas -->
-        <div class="row mb-4 animate-fade-in-up" style="animation-delay: 0.2s">
-            <div class="col-md-8">
-                <div class="card h-100 shadow-sm glass-effect">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-calendar-day me-2"></i>
-                                    Aulas por Dia
-                                </h5>
-                                <span class="badge bg-white text-primary ms-3">
-                                    <?php echo $nomeDia; ?>
-                                </span>
-                            </div>
-                            <div class="btn-group" role="group">
-                                <a href="?dia=hoje" class="btn btn-sm <?php echo $mostrarDia === 'hoje' ? 'btn-light' : 'btn-outline-light'; ?>">
-                                    <i class="fas fa-calendar-day me-1"></i>Hoje
-                                </a>
-                                <a href="?dia=amanha" class="btn btn-sm <?php echo $mostrarDia === 'amanha' ? 'btn-light' : 'btn-outline-light'; ?>">
-                                    <i class="fas fa-calendar-plus me-1"></i>Amanhã
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Seletor de dias moderno -->
-                        <div class="day-select-container mt-3">
-                            <select id="daySelector" class="day-select form-select form-select-sm bg-transparent text-white border-light">
-                                <option value="" disabled selected>Selecionar dia...</option>
-                                <?php
-                                // Gerar opções para os próximos 14 dias (2 semanas)
-                                $dataInicio = new DateTime();
-                                for ($i = 0; $i < 14; $i++) {
-                                    $data = clone $dataInicio;
-                                    $data->modify("+$i days");
-                                    $valor = $data->format('Y-m-d');
-
-                                    // Verificar se é final de semana (6=sábado, 7=domingo)
-                                    $diaSemana = (int)$data->format('N');
-                                    $classeData = '';
-
-                                    // Formatar a data para exibição
-                                    $dataFormatada = $data->format('d/m');
-                                    $nomeDiaSemana = $diasSemana[$diaSemana];
-
-                                    // Verificar se é feriado
-                                    $feriado = verificarFeriado($data);
-                                    $feriadoTag = $feriado ? ' <span class="holiday-badge"><i class="fas fa-star"></i>' . htmlspecialchars($feriado) . '</span>' : '';
-
-                                    // Classe para destacar finais de semana e feriados
-                                    if ($diaSemana > 5) {
-                                        $classeData = 'text-warning'; // Final de semana
-                                    } else if ($feriado) {
-                                        $classeData = 'text-danger'; // Feriado
-                                    }
-
-                                    echo '<option value="' . $valor . '" class="' . $classeData . '">';
-                                    echo $dataFormatada . ' - ' . $nomeDiaSemana . $feriadoTag;
-                                    echo '</option>';
-                                }
-                                ?>
-                            </select>
-                            <i class="fas fa-chevron-down select-arrow"></i>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <?php
-                        // Obtém as aulas de acordo com o dia selecionado (hoje, amanhã, ou data específica)
-                        if ($mostrarDia === 'hoje') {
-                            $aulas = getAulasHoje($horarios);
-                        } else if ($mostrarDia === 'data' && isset($dataExibicao)) {
-                            $aulas = getAulasDeData($horarios, $dataExibicao);
-                        } else {
-                            $aulas = getAulasAmanha($horarios);
-                        }
-
-                        if (!empty($aulas)):
-                            $aulasOrdenadas = ordenarAulasPorHorario($aulas);
-                        ?>
-                            <div class="list-group list-group-flush">
-                                <?php foreach ($aulasOrdenadas as $aula): ?>
-                                    <div class="list-group-item border-0 px-0">
-                                        <div class="d-flex w-100 justify-content-between align-items-center">
-                                            <div>
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <span class="badge bg-primary-light text-primary me-2">
-                                                        <?php echo $aula['horario_detalhado']; ?>
-                                                    </span>
-                                                    <small class="text-muted disciplina-codigo">
-                                                        <?php echo htmlspecialchars($aula['disciplina']); ?>
-                                                    </small>
-                                                </div>
-                                                <p class="mb-1 disciplina-nome"><?php echo htmlspecialchars($aula['nome']); ?></p>
-                                                <?php if (!empty($aula['local'])): ?>
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                                        <?php echo htmlspecialchars($aula['local']); ?>
-                                                    </small>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="badge bg-primary bg-opacity-10 text-primary">
-                                                <?php
-                                                $turno = $aula['horario']['turno'] == 'M' ? 'Manhã' : 'Tarde';
-                                                echo $turno;
-                                                ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <p class="text-muted mb-0 text-center py-3">
-                                <i class="fas fa-coffee me-2"></i>
-                                Não há aulas programadas para <?php echo strtolower($tituloDia); ?>
-                            </p>
-                        <?php endif; ?>
+            <!-- Resto do conteúdo permanece igual -->
+            <div class="animate-fade-in-up" style="animation-delay: 0.4s">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0" data-aos="fade-right">
+                        <i class="fas fa-graduation-cap me-2 text-primary"></i>
+                        Boletim <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>
+                    </h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Exportar para PDF">
+                            <i class="fas fa-file-pdf me-1"></i> Exportar
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" id="btnGraficoDesempenho" data-bs-toggle="tooltip" title="Visualizar gráficos">
+                            <i class="fas fa-chart-bar me-1"></i> Gráficos
+                        </button>
                     </div>
                 </div>
-            </div>
-<<<<<<< HEAD
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm glass-effect">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-percentage me-2"></i>
-                                Impacto na Frequência
-                            </h5>
-                            <button type="button" class="btn btn-sm btn-light bg-opacity-25"
-                                data-bs-toggle="modal" data-bs-target="#frequenciaHelpModal"
-                                title="Ajuda sobre frequência">
-                                <i class="fas fa-question"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($aulas)): ?>
-=======
-        </div>
-        <div class="col-md-4 impact-section">
-            <div class="card h-100 shadow-sm glass-effect">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-percentage me-2"></i>
-                        Impacto na Frequência
-                    </h5>
-                </div>
-                <div class="card-body text-center">
-                    <?php if (!empty($aulasAmanha)): ?>
-                        <div class="text-center mb-3">
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
-                            <?php
-                            // Calcula estatísticas gerais para todas as disciplinas do dia
-                            $statusGeral = 'success';
-                            $disciplinasComRisco = 0;
-                            $disciplinasComRiscoAlto = 0;
-                            $totalDisciplinas = 0;
-                            $dadosImpacto = [];
 
-                            foreach ($aulas as $aula) {
-                                foreach ($boletim as $disciplina) {
-                                    if (strpos($disciplina['disciplina'], $aula['disciplina']) !== false) {
-                                        $totalDisciplinas++;
-                                        $impacto = calcularImpactoFalta($disciplina);
-                                        if ($impacto) {
-                                            $dadosImpacto[] = $impacto;
-                                            $status = podeFaltarAmanha($disciplina);
-
-                                            if ($status === 'danger') {
-                                                $statusGeral = 'danger';
-                                                $disciplinasComRiscoAlto++;
-                                                $disciplinasComRisco++;
-                                            } else if ($status === 'warning' && $statusGeral !== 'danger') {
-                                                $statusGeral = 'warning';
-                                                $disciplinasComRisco++;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            $imagemStatus = [
-                                'success' => 'image.png',
-                                'warning' => 'image3.png',
-                                'danger' => 'image2.png'
-                            ];
-
-                            $mensagemStatus = [
-                                'success' => 'Você pode faltar hoje',
-                                'warning' => 'Cuidado com as faltas!',
-                                'danger' => 'Melhor não faltar hoje'
-                            ];
-
-                            $corStatus = [
-                                'success' => 'text-success',
-                                'warning' => 'text-warning',
-                                'danger' => 'text-danger'
-                            ];
-
-                            // Calcula informações do painel resumo
-                            $temDisciplinaCritica = $disciplinasComRiscoAlto > 0;
-                            $temDisciplinaAtencao = $disciplinasComRisco > $disciplinasComRiscoAlto;
-                            ?>
-<<<<<<< HEAD
-
-                            <!-- Painel de Resumo Visual -->
-                            <div class="row mb-4">
-                                <div class="col-md-5 text-center">
-                                    <img src="assets/<?php echo $imagemStatus[$statusGeral]; ?>"
-                                        alt="Status de frequência"
-                                        class="mb-2"
-                                        style="height: 75px; width: auto;">
-                                    <h5 class="mb-1 <?php echo $corStatus[$statusGeral]; ?>">
-                                        <?php echo $mensagemStatus[$statusGeral]; ?>
-                                    </h5>
-
-                                    <div class="text-muted small mt-1">
-                                        <?php if ($disciplinasComRisco > 0): ?>
-                                            <strong><?php echo $disciplinasComRisco; ?></strong>
-                                            <?php echo $disciplinasComRisco > 1 ? 'disciplinas' : 'disciplina'; ?>
-                                            requerem atenção nas faltas
-                                        <?php else: ?>
-                                            Todas as disciplinas estão com frequência adequada
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-7">
-                                    <div class="bg-light p-3 rounded-3">
-                                        <h6 class="border-bottom pb-2 mb-2">Resumo da Frequência</h6>
-
-                                        <div class="row text-center">
-                                            <div class="col-4">
-                                                <div class="h5 mb-0 <?php echo $temDisciplinaCritica ? 'text-danger' : 'text-muted'; ?>">
-                                                    <?php echo $disciplinasComRiscoAlto; ?>
-=======
-                            
-                            <img src="assets/<?php echo $imagemStatus[$statusGeral]; ?>" 
-                                 alt="Status de frequência"
-                                 class="impact-image mb-4"
-                                 style="height: 100px; width: auto;">
-                            <h5 class="impact-status mb-4 <?php echo $corStatus[$statusGeral]; ?>">
-                                <?php echo $mensagemStatus[$statusGeral]; ?>
-                            </h5>
-                        </div>
-                        
-                        <div class="list-group">
-                            <?php foreach ($aulasAmanha as $aula): ?>
-                                <?php
-                                foreach ($boletim as $disciplina):
-                                    if (strpos($disciplina['disciplina'], $aula['disciplina']) !== false):
-                                        $impacto = calcularImpactoFalta($disciplina);
-                                        if ($impacto):
-                                            // Extrai o nome da disciplina sem o código
-                                            preg_match('/^[^-]+ - (.+?)(\(\d+H\))?$/', $disciplina['disciplina'], $matches);
-                                            $nomeDisciplina = $matches[1] ?? $aula['disciplina'];
-                                ?>
-                                    <div class="list-group-item">
-                                        <h6 class="mb-1"><?php echo htmlspecialchars(trim($nomeDisciplina)); ?></h6>
-                                        <div class="small">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>Frequência atual: <?php echo number_format($impacto['atual'], 1); ?>%</div>
-                                                <div>Faltas: <?php echo $impacto['faltas_atuais']; ?>/<?php echo $impacto['maximo_faltas']; ?></div>
-                                            </div>
-                                            <div class="mt-1">
-                                                <div>Após falta: <?php echo number_format($impacto['nova'], 1); ?>%</div>
-                                                <div class="text-<?php echo podeFaltarAmanha($disciplina); ?> small">
-                                                    <?php if ($impacto['faltas_atuais'] >= $impacto['maximo_faltas']): ?>
-                                                        Limite de faltas atingido!
-                                                    <?php elseif (($impacto['maximo_faltas'] - $impacto['faltas_atuais']) <= 3): ?>
-                                                        Restam apenas <?php echo $impacto['maximo_faltas'] - $impacto['faltas_atuais']; ?> faltas!
-                                                    <?php else: ?>
-                                                        Impacto: -<?php echo number_format($impacto['impacto'], 1); ?>%
-                                                    <?php endif; ?>
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
-                                                </div>
-                                                <div class="small text-muted">Críticas</div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="h5 mb-0 <?php echo $temDisciplinaAtencao ? 'text-warning' : 'text-muted'; ?>">
-                                                    <?php echo $disciplinasComRisco - $disciplinasComRiscoAlto; ?>
-                                                </div>
-                                                <div class="small text-muted">Atenção</div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="h5 mb-0 text-success">
-                                                    <?php echo $totalDisciplinas - $disciplinasComRisco; ?>
-                                                </div>
-                                                <div class="small text-muted">Seguras</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="progress mt-3" style="height: 6px;">
-                                            <?php if ($disciplinasComRiscoAlto > 0): ?>
-                                                <div class="progress-bar bg-danger" style="width: <?php echo ($disciplinasComRiscoAlto / $totalDisciplinas) * 100; ?>%"></div>
-                                            <?php endif; ?>
-
-                                            <?php if ($disciplinasComRisco - $disciplinasComRiscoAlto > 0): ?>
-                                                <div class="progress-bar bg-warning" style="width: <?php echo (($disciplinasComRisco - $disciplinasComRiscoAlto) / $totalDisciplinas) * 100; ?>%"></div>
-                                            <?php endif; ?>
-
-                                            <div class="progress-bar bg-success" style="width: <?php echo (($totalDisciplinas - $disciplinasComRisco) / $totalDisciplinas) * 100; ?>%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Informações detalhadas por disciplina -->
-                            <h6 class="border-bottom pb-2 mb-3">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Detalhes por disciplina
-                            </h6>
-                            <div class="list-group">
-                                <?php foreach ($aulas as $aula): ?>
-                                    <?php
-                                    foreach ($boletim as $disciplina):
-                                        if (strpos($disciplina['disciplina'], $aula['disciplina']) !== false):
-                                            $impacto = calcularImpactoFalta($disciplina);
-                                            if ($impacto):                                            // Extrai o nome da disciplina sem o código
-                                                preg_match('/^([^-]+) - (.+?)(\(\d+H\))?$/', $disciplina['disciplina'], $matches);
-                                                $codigoDisciplina = $matches[1] ?? '';
-                                                $nomeDisciplina = $matches[2] ?? $aula['disciplina'];
-                                                // Remove possível especificação de carga horária entre parênteses
-                                                $nomeDisciplina = preg_replace('/\s*\(\d+H\)\s*$/', '', $nomeDisciplina);
-
-                                                // Define as classes de cores para os níveis de risco
-                                                $corRisco = [
-                                                    'baixo' => 'success',
-                                                    'medio' => 'warning',
-                                                    'alto' => 'danger'
-                                                ];
-
-                                                // Define as mensagens de recomendação baseadas no nível de risco
-                                                $mensagemRisco = [
-                                                    'baixo' => 'Pode faltar com segurança',
-                                                    'medio' => 'Fique atento às suas faltas',
-                                                    'alto' => 'Não deve faltar mais'
-                                                ];
-
-                                                // Obtém a cor do risco
-                                                $corRiscoAtual = $corRisco[$impacto['nivel_risco']] ?? 'warning';
-                                    ?> <div class="list-group-item">
-                                                    <h6 class="mb-2 d-flex justify-content-between align-items-center">
-                                                        <span>
-                                                            <?php if (!empty($codigoDisciplina)): ?>
-                                                                <span class="disciplina-codigo"><?php echo htmlspecialchars(trim($codigoDisciplina)); ?></span>
-                                                            <?php endif; ?>
-                                                            <span class="disciplina-nome-pequeno"><?php echo htmlspecialchars(trim($nomeDisciplina)); ?></span>
-                                                        </span>
-                                                        <span class="badge bg-<?php echo $corRiscoAtual; ?> bg-opacity-20 text-<?php echo $corRiscoAtual; ?> px-3 py-1">
-                                                            <?php echo $mensagemRisco[$impacto['nivel_risco']] ?? 'Verificar frequência'; ?>
-                                                        </span>
-                                                    </h6>
-
-                                                    <!-- Informações detalhadas de frequência -->
-                                                    <div class="small">
-                                                        <div class="row mb-2">
-                                                            <div class="col-md-6">
-                                                                <div><strong>Frequência atual:</strong> <?php echo number_format($impacto['atual'], 1); ?>%</div>
-                                                                <div><strong>Após uma falta:</strong> <?php echo number_format($impacto['nova'], 1); ?>%</div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <div><strong>Aulas dadas:</strong> <?php echo $impacto['aulas_dadas']; ?> de <?php echo $impacto['aulas_totais']; ?></div>
-                                                                <div><strong>Faltas:</strong> <?php echo $impacto['faltas_atuais']; ?> de <?php echo $impacto['maximo_faltas']; ?> permitidas</div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Barra de progresso para faltas -->
-                                                        <div class="mb-1 small fw-bold d-flex justify-content-between align-items-center">
-                                                            <span>Faltas utilizadas:</span>
-                                                            <span><?php echo $impacto['faltas_atuais']; ?>/<?php echo $impacto['maximo_faltas']; ?></span>
-                                                        </div>
-                                                        <div class="progress mb-2" style="height: 8px;">
-                                                            <div class="progress-bar bg-<?php echo $corRiscoAtual; ?>"
-                                                                role="progressbar"
-                                                                style="width: <?php echo $impacto['proporcao_faltas']; ?>%;"
-                                                                aria-valuenow="<?php echo $impacto['faltas_atuais']; ?>"
-                                                                aria-valuemin="0"
-                                                                aria-valuemax="<?php echo $impacto['maximo_faltas']; ?>">
-                                                            </div>
-                                                        </div> <!-- Informações de impacto -->
-                                                        <div class="mt-2 text-<?php echo $corRiscoAtual; ?> small fw-bold">
-                                                            <?php if ($impacto['faltas_atuais'] >= $impacto['maximo_faltas']): ?>
-                                                                <i class="fas fa-exclamation-triangle me-1"></i> Limite de faltas atingido!
-                                                            <?php elseif ($impacto['faltas_restantes'] <= 3 && $impacto['faltas_restantes'] > 0): ?>
-                                                                <i class="fas fa-exclamation-circle me-1"></i>
-                                                                Restam apenas <?php echo $impacto['faltas_restantes']; ?>
-                                                                <?php echo $impacto['faltas_restantes'] == 1 ? 'falta' : 'faltas'; ?>!
-                                                            <?php else: ?>
-                                                                <div class="text-success">
-                                                                    <i class="fas fa-check-circle me-1"></i>
-                                                                    Você ainda tem <?php echo $impacto['faltas_restantes']; ?> faltas disponíveis
-                                                                </div>
-                                                            <?php endif; ?>
-                                                        </div>
-
-                                                        <!-- Seção de dicas e orientações -->
-                                                        <?php if ($impacto['faltas_restantes'] <= 3): ?>
-                                                            <div class="mt-2 pt-2 border-top">
-                                                                <small class="text-muted">
-                                                                    <i class="fas fa-info-circle me-1"></i>
-                                                                    Impacto da próxima falta: -<?php echo number_format($impacto['impacto'], 1); ?>%
-                                                                    na sua frequência total.
-                                                                </small>
-                                                            </div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                <?php
-                                            endif;
-                                        endif;
-                                    endforeach;
-                                endforeach;
-                                ?>
-                            </div>
-                            <!-- Recomendações personalizadas -->
-                            <div class="mt-4 p-3 bg-light rounded-3 border-start border-4 border-primary">
-                                <h6 class="mb-2 d-flex justify-content-between align-items-center">
-                                    <span>
-                                        <i class="fas fa-lightbulb text-primary me-1"></i>
-                                        Recomendações para você
-                                    </span>
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#calculadoraFrequenciaModal">
-                                        <i class="fas fa-calculator me-1"></i> Simular Faltas
-                                    </button>
-                                </h6>
-
-                                <p class="small mb-0">
-                                    <?php if ($disciplinasComRiscoAlto > 0): ?>
-                                        <strong>Atenção!</strong> Você possui disciplinas com alto risco de reprovação por falta.
-                                        Recomendamos que evite faltar nas próximas aulas e entre em contato com seus professores
-                                        para verificar a possibilidade de abono de faltas anteriores ou atividades compensatórias.
-                                    <?php elseif ($disciplinasComRisco > 0): ?>
-                                        <strong>Alerta:</strong> Algumas disciplinas estão se aproximando do limite de faltas permitido.
-                                        Você deve gerenciar cuidadosamente suas faltas daqui para frente, guardando-as para emergências reais.
-                                    <?php else: ?>
-                                        <strong>Tudo certo!</strong> Sua frequência está adequada em todas as disciplinas.
-                                        Continue mantendo uma boa assiduidade para garantir seu sucesso acadêmico.
-                                    <?php endif; ?>
-
-                                    <br><br>
-                                    <em>Lembre-se:</em> A frequência mínima exigida para aprovação é de 75% em cada disciplina.
-                                    Use este painel para acompanhar sua situação e tomar decisões informadas sobre suas faltas.
-                                </p>
-                            </div>
-                        <?php else: ?>
-                            <p class="text-muted text-center">
-                                Não há aulas para analisar o impacto na frequência.
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resto do conteúdo permanece igual -->
-        <div class="animate-fade-in-up" style="animation-delay: 0.4s">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="mb-0" data-aos="fade-right">
-                    <i class="fas fa-graduation-cap me-2 text-primary"></i>
-                    Boletim <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>
-                </h3>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Exportar para PDF">
-                        <i class="fas fa-file-pdf me-1"></i> Exportar
-                    </button>
-                    <button class="btn btn-sm btn-outline-primary" id="btnGraficoDesempenho" data-bs-toggle="tooltip" title="Visualizar gráficos">
-                        <i class="fas fa-chart-bar me-1"></i> Gráficos
-                    </button>
-                </div>
-            </div>
-
-            <?php if (isset($boletim) && is_array($boletim)): ?> <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="100">
-                    <div class="table-responsive">
-                        <table class="table table-boletim mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="min-width: 200px">Disciplina</th>
-                                    <th>Nota 1</th>
-                                    <th>Nota 2</th>
-                                    <th>Nota 3</th>
-                                    <th>Nota 4</th>
-                                    <th>Média</th>
-                                    <th>Freq. (%)</th>
-                                    <th>Situação</th>
-                                </tr>
-                            </thead>
-                            <tbody><?php foreach ($boletim as $disciplina): ?>
-                                    <?php
-                                        // Extraindo o nome da disciplina (assumindo que o formato é "CÓDIGO - NOME DA DISCIPLINA")
-                                        $disciplinaTexto = $disciplina['disciplina'];
-                                        $partes = explode(' - ', $disciplinaTexto, 2);
-                                        $codigoDisciplina = isset($partes[0]) ? $partes[0] : $disciplinaTexto;
-                                        $nomeDisciplina = isset($partes[1]) ? $partes[1] : '';
-                                    ?> <tr class="disciplina-item">
-                                        <td>
-                                            <span class="disciplina-codigo"><?php echo htmlspecialchars($codigoDisciplina); ?></span>
-                                            <div class="disciplina-nome"><?php echo htmlspecialchars($nomeDisciplina); ?></div>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (isset($disciplina['nota_etapa_1']['nota'])): ?>
-                                                <span class="nota-valor <?php echo $disciplina['nota_etapa_1']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
-                                                    <?php echo $disciplina['nota_etapa_1']['nota']; ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <div class="nota-simulacao">
-                                                    <input type="number"
-                                                        class="form-control form-control-sm nota-input"
-                                                        style="width: 60px"
-                                                        min="0"
-                                                        max="100"
-                                                        step="0.1"
-                                                        data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                        data-etapa="1"
-                                                        placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                                </div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (isset($disciplina['nota_etapa_2']['nota'])): ?>
-                                                <span class="nota-valor <?php echo $disciplina['nota_etapa_2']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
-                                                    <?php echo $disciplina['nota_etapa_2']['nota']; ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <div class="nota-simulacao">
-                                                    <input type="number"
-                                                        class="form-control form-control-sm nota-input"
-                                                        style="width: 60px"
-                                                        min="0"
-                                                        max="100"
-                                                        step="0.1"
-                                                        data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                        data-etapa="2"
-                                                        placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                                </div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (isset($disciplina['nota_etapa_3']['nota'])): ?>
-                                                <span class="nota-valor <?php echo $disciplina['nota_etapa_3']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
-                                                    <?php echo $disciplina['nota_etapa_3']['nota']; ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <div class="nota-simulacao">
-                                                    <input type="number"
-                                                        class="form-control form-control-sm nota-input"
-                                                        style="width: 60px"
-                                                        min="0"
-                                                        max="100"
-                                                        step="0.1"
-                                                        data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                        data-etapa="3"
-                                                        placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                                </div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (isset($disciplina['nota_etapa_4']['nota'])): ?>
-                                                <span class="nota-valor <?php echo $disciplina['nota_etapa_4']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
-                                                    <?php echo $disciplina['nota_etapa_4']['nota']; ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <div class="nota-simulacao">
-                                                    <input type="number"
-                                                        class="form-control form-control-sm nota-input"
-                                                        style="width: 60px"
-                                                        min="0"
-                                                        max="100"
-                                                        step="0.1"
-                                                        data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                        data-etapa="4"
-                                                        placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                                </div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if (isset($disciplina['media_final_disciplina'])): ?>
-                                                <span class="nota-valor <?php echo $disciplina['media_final_disciplina'] >= 60 ? 'text-success' : 'text-danger'; ?>">
-                                                    <?php echo $disciplina['media_final_disciplina']; ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="text-muted">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php
-                                            $frequencia = isset($disciplina['percentual_carga_horaria_frequentada'])
-                                                ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1)
-                                                : '-';
-
-                                            if ($frequencia != '-') {
-                                                $freqClass = 'text-success';
-                                                $freqIcon = 'check-circle';
-
-                                                if ($frequencia < 75) {
-                                                    $freqClass = 'text-danger';
-                                                    $freqIcon = 'exclamation-circle';
-                                                } elseif ($frequencia < 80) {
-                                                    $freqClass = 'text-warning';
-                                                    $freqIcon = 'exclamation-triangle';
-                                                }
-
-                                                echo "<span class='{$freqClass}'>{$frequencia}% <i class='fas fa-{$freqIcon} ms-1'></i></span>";
-                                            } else {
-                                                echo "<span class='text-muted'>-</span>";
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            $situacao = $disciplina['situacao'] ?? '';
-                                            $situacaoClass = '';
-                                            $situacaoIcon = '';
-
-                                            if (stripos($situacao, 'APROVADO') !== false) {
-                                                $situacaoClass = 'situacao-aprovado';
-                                                $situacaoIcon = 'check-circle';
-                                            } elseif (stripos($situacao, 'REPROVADO') !== false) {
-                                                $situacaoClass = 'situacao-reprovado';
-                                                $situacaoIcon = 'times-circle';
-                                            } else {
-                                                $situacaoClass = 'situacao-cursando';
-                                                $situacaoIcon = 'clock';
-                                            }
-                                            ?> <div class="<?php echo $situacaoClass; ?>">
-                                                <span class="status-indicador <?php
-                                                                                if ($situacaoClass == 'situacao-aprovado') echo 'status-verde';
-                                                                                else if ($situacaoClass == 'situacao-reprovado') echo 'status-vermelho';
-                                                                                else echo 'status-amarelo';
-                                                                                ?>"></span>
-                                                <span><?php echo htmlspecialchars($situacao); ?></span>
-                                            </div>
-                                        </td>
+                <?php if (isset($boletim) && is_array($boletim)): ?> <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="100">
+                        <div class="table-responsive">
+                            <table class="table table-boletim mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 200px">Disciplina</th>
+                                        <th>Nota 1</th>
+                                        <th>Nota 2</th>
+                                        <th>Nota 3</th>
+                                        <th>Nota 4</th>
+                                        <th>Média</th>
+                                        <th>Freq. (%)</th>
+                                        <th>Situação</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody><?php foreach ($boletim as $disciplina): ?>
+                                        <?php
+                                            // Extraindo o nome da disciplina (assumindo que o formato é "CÓDIGO - NOME DA DISCIPLINA")
+                                            $disciplinaTexto = $disciplina['disciplina'];
+                                            $partes = explode(' - ', $disciplinaTexto, 2);
+                                            $codigoDisciplina = isset($partes[0]) ? $partes[0] : $disciplinaTexto;
+                                            $nomeDisciplina = isset($partes[1]) ? $partes[1] : '';
+                                        ?> <tr class="disciplina-item">
+                                            <td>
+                                                <span class="disciplina-codigo"><?php echo htmlspecialchars($codigoDisciplina); ?></span>
+                                                <div class="disciplina-nome"><?php echo htmlspecialchars($nomeDisciplina); ?></div>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if (isset($disciplina['nota_etapa_1']['nota'])): ?>
+                                                    <span class="nota-valor <?php echo $disciplina['nota_etapa_1']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
+                                                        <?php echo $disciplina['nota_etapa_1']['nota']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <div class="nota-simulacao">
+                                                        <input type="number"
+                                                            class="form-control form-control-sm nota-input"
+                                                            style="width: 60px"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.1"
+                                                            data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                            data-etapa="1"
+                                                            placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if (isset($disciplina['nota_etapa_2']['nota'])): ?>
+                                                    <span class="nota-valor <?php echo $disciplina['nota_etapa_2']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
+                                                        <?php echo $disciplina['nota_etapa_2']['nota']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <div class="nota-simulacao">
+                                                        <input type="number"
+                                                            class="form-control form-control-sm nota-input"
+                                                            style="width: 60px"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.1"
+                                                            data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                            data-etapa="2"
+                                                            placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if (isset($disciplina['nota_etapa_3']['nota'])): ?>
+                                                    <span class="nota-valor <?php echo $disciplina['nota_etapa_3']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
+                                                        <?php echo $disciplina['nota_etapa_3']['nota']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <div class="nota-simulacao">
+                                                        <input type="number"
+                                                            class="form-control form-control-sm nota-input"
+                                                            style="width: 60px"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.1"
+                                                            data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                            data-etapa="3"
+                                                            placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if (isset($disciplina['nota_etapa_4']['nota'])): ?>
+                                                    <span class="nota-valor <?php echo $disciplina['nota_etapa_4']['nota'] >= 60 ? 'text-success' : 'text-danger'; ?>">
+                                                        <?php echo $disciplina['nota_etapa_4']['nota']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <div class="nota-simulacao">
+                                                        <input type="number"
+                                                            class="form-control form-control-sm nota-input"
+                                                            style="width: 60px"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.1"
+                                                            data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
+                                                            data-etapa="4"
+                                                            placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if (isset($disciplina['media_final_disciplina'])): ?>
+                                                    <span class="nota-valor <?php echo $disciplina['media_final_disciplina'] >= 60 ? 'text-success' : 'text-danger'; ?>">
+                                                        <?php echo $disciplina['media_final_disciplina']; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php
+                                                $frequencia = isset($disciplina['percentual_carga_horaria_frequentada'])
+                                                    ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1)
+                                                    : '-';
+
+                                                if ($frequencia != '-') {
+                                                    $freqClass = 'text-success';
+                                                    $freqIcon = 'check-circle';
+
+                                                    if ($frequencia < 75) {
+                                                        $freqClass = 'text-danger';
+                                                        $freqIcon = 'exclamation-circle';
+                                                    } elseif ($frequencia < 80) {
+                                                        $freqClass = 'text-warning';
+                                                        $freqIcon = 'exclamation-triangle';
+                                                    }
+
+                                                    echo "<span class='{$freqClass}'>{$frequencia}% <i class='fas fa-{$freqIcon} ms-1'></i></span>";
+                                                } else {
+                                                    echo "<span class='text-muted'>-</span>";
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                $situacao = $disciplina['situacao'] ?? '';
+                                                $situacaoClass = '';
+                                                $situacaoIcon = '';
+
+                                                if (stripos($situacao, 'APROVADO') !== false) {
+                                                    $situacaoClass = 'situacao-aprovado';
+                                                    $situacaoIcon = 'check-circle';
+                                                } elseif (stripos($situacao, 'REPROVADO') !== false) {
+                                                    $situacaoClass = 'situacao-reprovado';
+                                                    $situacaoIcon = 'times-circle';
+                                                } else {
+                                                    $situacaoClass = 'situacao-cursando';
+                                                    $situacaoIcon = 'clock';
+                                                }
+                                                ?> <div class="<?php echo $situacaoClass; ?>">
+                                                    <span class="status-indicador <?php
+                                                                                    if ($situacaoClass == 'situacao-aprovado') echo 'status-verde';
+                                                                                    else if ($situacaoClass == 'situacao-reprovado') echo 'status-vermelho';
+                                                                                    else echo 'status-amarelo';
+                                                                                    ?>"></span>
+                                                    <span><?php echo htmlspecialchars($situacao); ?></span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <div class="alert alert-warning">
-                    Não foi possível carregar o boletim.
-                    <?php if (isset($meusDados['tipo_vinculo'])): ?>
-                        <br>Tipo de vínculo: <?php echo htmlspecialchars($meusDados['tipo_vinculo']); ?>
-                    <?php endif; ?>
-                    <br>Por favor, verifique se você está matriculado no período atual.
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        Não foi possível carregar o boletim.
+                        <?php if (isset($meusDados['tipo_vinculo'])): ?>
+                            <br>Tipo de vínculo: <?php echo htmlspecialchars($meusDados['tipo_vinculo']); ?>
+                        <?php endif; ?>
+                        <br>Por favor, verifique se você está matriculado no período atual.
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Seção do Horário -->
+            <div class="animate-fade-in-up" style="animation-delay: 0.6s">
+                <h3 class="mt-5 mb-4">Horário de Aulas</h3>
+
+                <?php if (isset($horarios) && is_array($horarios)): ?>
+                    <?php mostrarHorarios($horarios); ?>
+                <?php else: ?>
+                    <div class="alert alert-warning mt-4">
+                        Não foi possível carregar o horário das aulas.
+                    </div>
+                <?php endif; ?>
+            </div>
+
         </div>
 
-        <!-- Seção do Horário -->
-        <div class="animate-fade-in-up" style="animation-delay: 0.6s">
-            <h3 class="mt-5 mb-4">Horário de Aulas</h3>
+        <!-- Adicione este script antes do fechamento do body -->
+        <script>
+            document.querySelectorAll('.nota-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const disciplina = this.dataset.disciplina;
+                    const etapa = parseInt(this.dataset.etapa);
+                    const valor = parseFloat(this.value) || 0;
 
-            <?php if (isset($horarios) && is_array($horarios)): ?>
-                <?php mostrarHorarios($horarios); ?>
-            <?php else: ?>
-                <div class="alert alert-warning mt-4">
-                    Não foi possível carregar o horário das aulas.
-                </div>
-            <?php endif; ?>
-        </div>
+                    // Pega todas as notas simuladas da disciplina
+                    const notasSimuladas = Array.from(document.querySelectorAll(`.nota-input[data-disciplina="${disciplina}"]`))
+                        .map(input => ({
+                            etapa: parseInt(input.dataset.etapa),
+                            valor: parseFloat(input.value) || 0,
+                            peso: input.dataset.etapa <= 2 ? 2 : 3
+                        }));
 
-    </div>
+                    // Calcula a média com as notas simuladas
+                    let somaNotas = 0;
+                    let somaPesos = 0;
 
-    <!-- Adicione este script antes do fechamento do body -->
-    <script>
-        document.querySelectorAll('.nota-input').forEach(input => {
-            input.addEventListener('input', function() {
-                const disciplina = this.dataset.disciplina;
-                const etapa = parseInt(this.dataset.etapa);
-                const valor = parseFloat(this.value) || 0;
+                    notasSimuladas.forEach(nota => {
+                        if (nota.valor > 0) {
+                            somaNotas += nota.valor * nota.peso;
+                            somaPesos += nota.peso;
+                        }
+                    });
 
-                // Pega todas as notas simuladas da disciplina
-                const notasSimuladas = Array.from(document.querySelectorAll(`.nota-input[data-disciplina="${disciplina}"]`))
-                    .map(input => ({
-                        etapa: parseInt(input.dataset.etapa),
-                        valor: parseFloat(input.value) || 0,
-                        peso: input.dataset.etapa <= 2 ? 2 : 3
-                    }));
+                    // Atualiza os placeholders das outras notas
+                    if (somaPesos > 0) {
+                        const mediaDesejada = 60;
+                        const pontosNecessarios = (mediaDesejada * 10) - somaNotas;
+                        const pesosRestantes = 10 - somaPesos;
 
-                // Calcula a média com as notas simuladas
-                let somaNotas = 0;
-                let somaPesos = 0;
+                        if (pesosRestantes > 0) {
+                            const notaNecessaria = Math.min(Math.max(pontosNecessarios / pesosRestantes, 0), 100);
 
-                notasSimuladas.forEach(nota => {
-                    if (nota.valor > 0) {
-                        somaNotas += nota.valor * nota.peso;
-                        somaPesos += nota.peso;
+                            document.querySelectorAll(`.nota-input[data-disciplina="${disciplina}"]`).forEach(input => {
+                                if (!input.value) {
+                                    input.placeholder = notaNecessaria.toFixed(1);
+                                }
+                            });
+                        }
                     }
                 });
-
-                // Atualiza os placeholders das outras notas
-                if (somaPesos > 0) {
-                    const mediaDesejada = 60;
-                    const pontosNecessarios = (mediaDesejada * 10) - somaNotas;
-                    const pesosRestantes = 10 - somaPesos;
-
-                    if (pesosRestantes > 0) {
-                        const notaNecessaria = Math.min(Math.max(pontosNecessarios / pesosRestantes, 0), 100);
-
-                        document.querySelectorAll(`.nota-input[data-disciplina="${disciplina}"]`).forEach(input => {
-                            if (!input.value) {
-                                input.placeholder = notaNecessaria.toFixed(1);
-                            }
-                        });
-                    }
-                }
             });
-        });
-    </script>
+        </script>
 
-    <!-- Script para as funcionalidades do dashboard -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Botão de atualização do dashboard
-            document.getElementById('refreshDashboardBtn')?.addEventListener('click', function() {
-                // Mostrar indicador de carregamento
-                const loadingBar = document.getElementById('loadingBar');
-                if (loadingBar) loadingBar.style.display = 'block';
+        <!-- Script para as funcionalidades do dashboard -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Botão de atualização do dashboard
+                document.getElementById('refreshDashboardBtn')?.addEventListener('click', function() {
+                    // Mostrar indicador de carregamento
+                    const loadingBar = document.getElementById('loadingBar');
+                    if (loadingBar) loadingBar.style.display = 'block';
 
-                showNotification('Atualizando dados...', 'info');
+                    showNotification('Atualizando dados...', 'info');
 
-                // Recarregar a página após breve delay
+                    // Recarregar a página após breve delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                });
+
+                // Botão de filtro do dashboard
+                document.getElementById('filterDashboardBtn')?.addEventListener('click', function() {
+                    showNotification('Função de filtro será disponibilizada em breve!', 'info');
+
+                    // Futuramente aqui será implementado um modal de filtro
+                });
+
+                // Botão de personalização do dashboard
+                document.getElementById('customizeDashboardBtn')?.addEventListener('click', function() {
+                    showNotification('Personalização do dashboard será disponibilizada em breve!', 'info');
+
+                    // Futuramente aqui será implementado um modal de personalização
+                });
+            });
+        </script>
+
+        <!-- Ativação do sistema de notificações toast -->
+        <script>
+            // Após o carregamento do DOM, exibir uma notificação de boas-vindas
+            document.addEventListener('DOMContentLoaded', function() {
+                // Animações para itens do boletim
+                const disciplinaItems = document.querySelectorAll('.disciplina-item');
+                disciplinaItems.forEach((item, index) => {
+                    item.classList.add('boletim-item');
+                    item.style.animationDelay = `${0.1 + index * 0.05}s`;
+                });
+
+                // Exibir notificação de boas-vindas após um pequeno atraso
                 setTimeout(() => {
-                    window.location.reload();
-                }, 500);
+                    // Verificar se a função Toastify está disponível
+                    if (typeof Toastify !== 'undefined') {
+                        Toastify({
+                            text: '<i class="fas fa-check-circle"></i> Bem-vindo(a) ao SUPACO! Dados acadêmicos carregados.',
+                            duration: 5000,
+                            gravity: "top",
+                            position: "right",
+                            className: "toast-custom",
+                            escapeMarkup: false,
+                            style: {
+                                background: "linear-gradient(to right, #10b981, #059669)",
+                                boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+                                borderRadius: "8px",
+                            }
+                        }).showToast();
+                    }
+                }, 1000);
             });
 
-            // Botão de filtro do dashboard
-            document.getElementById('filterDashboardBtn')?.addEventListener('click', function() {
-                showNotification('Função de filtro será disponibilizada em breve!', 'info');
+            // Função para exibir notificações toast para uso em todo o sistema
+            function showNotification(message, type = 'success') {
+                const bgColors = {
+                    success: "linear-gradient(to right, #10b981, #059669)",
+                    warning: "linear-gradient(to right, #f59e0b, #d97706)",
+                    danger: "linear-gradient(to right, #ef4444, #dc2626)",
+                    info: "linear-gradient(to right, #06b6d4, #0891b2)"
+                };
 
-                // Futuramente aqui será implementado um modal de filtro
-            });
+                const icons = {
+                    success: '<i class="fas fa-check-circle"></i> ',
+                    warning: '<i class="fas fa-exclamation-circle"></i> ',
+                    danger: '<i class="fas fa-exclamation-triangle"></i> ',
+                    info: '<i class="fas fa-info-circle"></i> '
+                };
 
-            // Botão de personalização do dashboard
-            document.getElementById('customizeDashboardBtn')?.addEventListener('click', function() {
-                showNotification('Personalização do dashboard será disponibilizada em breve!', 'info');
-
-                // Futuramente aqui será implementado um modal de personalização
-            });
-        });
-    </script>
-
-    <!-- Ativação do sistema de notificações toast -->
-    <script>
-        // Após o carregamento do DOM, exibir uma notificação de boas-vindas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animações para itens do boletim
-            const disciplinaItems = document.querySelectorAll('.disciplina-item');
-            disciplinaItems.forEach((item, index) => {
-                item.classList.add('boletim-item');
-                item.style.animationDelay = `${0.1 + index * 0.05}s`;
-            });
-
-            // Exibir notificação de boas-vindas após um pequeno atraso
-            setTimeout(() => {
-                // Verificar se a função Toastify está disponível
                 if (typeof Toastify !== 'undefined') {
                     Toastify({
-                        text: '<i class="fas fa-check-circle"></i> Bem-vindo(a) ao SUPACO! Dados acadêmicos carregados.',
+                        text: icons[type] + message,
                         duration: 5000,
                         gravity: "top",
                         position: "right",
                         className: "toast-custom",
                         escapeMarkup: false,
                         style: {
-                            background: "linear-gradient(to right, #10b981, #059669)",
+                            background: bgColors[type],
                             boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
                             borderRadius: "8px",
                         }
                     }).showToast();
                 }
-            }, 1000);
-        });
-
-        // Função para exibir notificações toast para uso em todo o sistema
-        function showNotification(message, type = 'success') {
-            const bgColors = {
-                success: "linear-gradient(to right, #10b981, #059669)",
-                warning: "linear-gradient(to right, #f59e0b, #d97706)",
-                danger: "linear-gradient(to right, #ef4444, #dc2626)",
-                info: "linear-gradient(to right, #06b6d4, #0891b2)"
-            };
-
-            const icons = {
-                success: '<i class="fas fa-check-circle"></i> ',
-                warning: '<i class="fas fa-exclamation-circle"></i> ',
-                danger: '<i class="fas fa-exclamation-triangle"></i> ',
-                info: '<i class="fas fa-info-circle"></i> '
-            };
-
-            if (typeof Toastify !== 'undefined') {
-                Toastify({
-                    text: icons[type] + message,
-                    duration: 5000,
-                    gravity: "top",
-                    position: "right",
-                    className: "toast-custom",
-                    escapeMarkup: false,
-                    style: {
-                        background: bgColors[type],
-                        boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-                        borderRadius: "8px",
-                    }
-                }).showToast();
             }
-        }
-    </script>
+        </script>
 
-    <!-- Adicione estes estilos ao arquivo base.php -->
-    <style>
-        .nota-simulacao {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .nota-input {
-            text-align: center;
-            border: 1px solid var(--neutral-300);
-            border-radius: 8px;
-            transition: all 0.25s var(--transition-function);
-            font-weight: 600;
-            padding: 0.4rem;
-            width: 60px !important;
-        }
-
-        .nota-input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
-            outline: none;
-        }
-
-        .nota-input::placeholder {
-            color: var(--warning-color);
-            opacity: 1;
-            font-weight: 500;
-        }
-
-        .nota-valor {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        /* Modal para gráficos */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Loading state */
-        .loading-bar {
-            height: 3px;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: linear-gradient(to right, var(--primary-color), var(--info-color));
-            z-index: 9999;
-            display: none;
-            animation: progress 2s ease-in-out infinite;
-            background-size: 200% 100%;
-        }
-
-        @keyframes progress {
-            0% {
-                background-position: 100% 0;
+        <!-- Adicione estes estilos ao arquivo base.php -->
+        <style>
+            .nota-simulacao {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
             }
 
-            100% {
-                background-position: -100% 0;
+            .nota-input {
+                text-align: center;
+                border: 1px solid var(--neutral-300);
+                border-radius: 8px;
+                transition: all 0.25s var(--transition-function);
+                font-weight: 600;
+                padding: 0.4rem;
+                width: 60px !important;
             }
-        }
-    </style>
 
-    <!-- Adicionar modal para gráficos de desempenho -->
-    <div class="modal fade" id="graficoDesempenhoModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-chart-line me-2"></i>
-                        Análise de Desempenho
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="nav nav-tabs mb-3" id="chartTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="notas-tab" data-bs-toggle="tab" data-bs-target="#notas-chart" type="button">
-                                <i class="fas fa-star me-1"></i> Notas
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="frequencia-tab" data-bs-toggle="tab" data-bs-target="#frequencia-chart" type="button">
-                                <i class="fas fa-calendar-check me-1"></i> Frequência
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="notas-chart">
-                            <div class="chart-container">
-                                <canvas id="notasChart"></canvas>
+            .nota-input:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+                outline: none;
+            }
+
+            .nota-input::placeholder {
+                color: var(--warning-color);
+                opacity: 1;
+                font-weight: 500;
+            }
+
+            .nota-valor {
+                font-weight: 600;
+                font-size: 1rem;
+            }
+
+            /* Modal para gráficos */
+            .chart-container {
+                position: relative;
+                height: 300px;
+                width: 100%;
+            }
+
+            /* Loading state */
+            .loading-bar {
+                height: 3px;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to right, var(--primary-color), var(--info-color));
+                z-index: 9999;
+                display: none;
+                animation: progress 2s ease-in-out infinite;
+                background-size: 200% 100%;
+            }
+
+            @keyframes progress {
+                0% {
+                    background-position: 100% 0;
+                }
+
+                100% {
+                    background-position: -100% 0;
+                }
+            }
+        </style>
+
+        <!-- Adicionar modal para gráficos de desempenho -->
+        <div class="modal fade" id="graficoDesempenhoModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Análise de Desempenho
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs mb-3" id="chartTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="notas-tab" data-bs-toggle="tab" data-bs-target="#notas-chart" type="button">
+                                    <i class="fas fa-star me-1"></i> Notas
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="frequencia-tab" data-bs-toggle="tab" data-bs-target="#frequencia-chart" type="button">
+                                    <i class="fas fa-calendar-check me-1"></i> Frequência
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="notas-chart">
+                                <div class="chart-container">
+                                    <canvas id="notasChart"></canvas>
+                                </div>
                             </div>
-                        </div>
-                        <div class="tab-pane fade" id="frequencia-chart">
-                            <div class="chart-container">
-                                <canvas id="frequenciaChart"></canvas>
+                            <div class="tab-pane fade" id="frequencia-chart">
+                                <div class="chart-container">
+                                    <canvas id="frequenciaChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-<<<<<<< HEAD
-    <script>
-        // Inicializar gráficos quando o botão for clicado
-        document.getElementById('btnGraficoDesempenho')?.addEventListener('click', function() {
-            const modal = new bootstrap.Modal(document.getElementById('graficoDesempenhoModal'));
-            modal.show();
-=======
-    <!-- Seção do Boletim -->
-    <div class="animate-fade-in-up" style="animation-delay: 0.4s">
-        <h3 class="mb-4">Boletim <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?></h3>
-        
-        <?php if (isset($boletim) && is_array($boletim)): ?>
-            <!-- Versão Desktop -->
-            <div class="d-none d-md-block">
-                <div class="table-responsive">
-                    <table class="table table-striped table-boletim">
-                        <thead>
-                            <tr>
-                                <th class="disciplina-col">Disciplina</th>
-                                <th style="min-width: 70px">N1</th>
-                                <th style="min-width: 70px">N2</th>
-                                <th style="min-width: 70px">N3</th>
-                                <th style="min-width: 70px">N4</th>
-                                <th style="min-width: 70px">Média</th>
-                                <th style="min-width: 70px">Freq.</th>
-                                <th>Situação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($boletim as $disciplina): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($disciplina['disciplina']); ?></td>
-                                    <td>
-                                        <?php if (isset($disciplina['nota_etapa_1']['nota'])): ?>
-                                            <?php echo $disciplina['nota_etapa_1']['nota']; ?>
-                                        <?php else: ?>
-                                            <div class="nota-simulacao">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm nota-input" 
-                                                       style="width: 70px" 
-                                                       min="0" 
-                                                       max="100" 
-                                                       step="0.1"
-                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                       data-etapa="1"
-                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (isset($disciplina['nota_etapa_2']['nota'])): ?>
-                                            <?php echo $disciplina['nota_etapa_2']['nota']; ?>
-                                        <?php else: ?>
-                                            <div class="nota-simulacao">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm nota-input" 
-                                                       style="width: 70px" 
-                                                       min="0" 
-                                                       max="100" 
-                                                       step="0.1"
-                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                       data-etapa="2"
-                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (isset($disciplina['nota_etapa_3']['nota'])): ?>
-                                            <?php echo $disciplina['nota_etapa_3']['nota']; ?>
-                                        <?php else: ?>
-                                            <div class="nota-simulacao">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm nota-input" 
-                                                       style="width: 70px" 
-                                                       min="0" 
-                                                       max="100" 
-                                                       step="0.1"
-                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                       data-etapa="3"
-                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (isset($disciplina['nota_etapa_4']['nota'])): ?>
-                                            <?php echo $disciplina['nota_etapa_4']['nota']; ?>
-                                        <?php else: ?>
-                                            <div class="nota-simulacao">
-                                                <input type="number" 
-                                                       class="form-control form-control-sm nota-input" 
-                                                       style="width: 70px" 
-                                                       min="0" 
-                                                       max="100" 
-                                                       step="0.1"
-                                                       data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                       data-etapa="4"
-                                                       placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?php echo isset($disciplina['media_final_disciplina']) ? $disciplina['media_final_disciplina'] : '-'; ?></td>
-                                    <td>
-                                        <?php 
-                                        $frequencia = isset($disciplina['percentual_carga_horaria_frequentada']) 
-                                            ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1) 
-                                            : '-';
-                                        $frequenciaClass = $frequencia < 75 && $frequencia != '-' ? 'text-danger' : '';
-                                        echo "<span class='{$frequenciaClass}'>{$frequencia}</span>";
-                                        ?>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($disciplina['situacao']); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <script>
+            // Inicializar gráficos quando o botão for clicado
+            document.getElementById('btnGraficoDesempenho')?.addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('graficoDesempenhoModal'));
+                modal.show();
 
-            <!-- Versão Mobile -->
-            <div class="d-md-none">
-                <div class="row g-3">
-                    <?php foreach ($boletim as $disciplina): ?>
-                        <div class="col-12">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <!-- Cabeçalho da Disciplina -->
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h6 class="card-title text-primary mb-1">
-                                                <?php 
-                                                // Extrai apenas o nome da disciplina sem o código
-                                                preg_match('/^[^-]+ - (.+?)(\(\d+H\))?$/', $disciplina['disciplina'], $matches);
-                                                echo htmlspecialchars($matches[1] ?? $disciplina['disciplina']); 
-                                                ?>
-                                            </h6>
-                                            <div class="d-flex gap-2">
-                                                <span class="badge <?php echo isset($disciplina['media_final_disciplina']) && $disciplina['media_final_disciplina'] >= 60 ? 'bg-success' : 'bg-danger'; ?>">
-                                                    Média: <?php echo isset($disciplina['media_final_disciplina']) ? $disciplina['media_final_disciplina'] : '-'; ?>
-                                                </span>
-                                                <span class="badge <?php echo isset($disciplina['percentual_carga_horaria_frequentada']) && $disciplina['percentual_carga_horaria_frequentada'] >= 75 ? 'bg-success' : 'bg-danger'; ?>">
-                                                    Freq: <?php echo isset($disciplina['percentual_carga_horaria_frequentada']) ? number_format($disciplina['percentual_carga_horaria_frequentada'], 1) . '%' : '-'; ?>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-primary bg-opacity-10 text-primary">
-                                            <?php echo htmlspecialchars($disciplina['situacao']); ?>
-                                        </span>
-                                    </div>
+                // Timeout para garantir que o modal esteja visível antes de renderizar os gráficos
+                setTimeout(() => {
+                    // Dados das disciplinas para os gráficos
+                    const disciplinas = <?php echo json_encode(array_map(function ($d) {
+                                            $partes = explode(' - ', $d['disciplina'], 2);
+                                            $nome = isset($partes[1]) ? $partes[1] : $d['disciplina'];
 
-                                    <!-- Grid de Notas -->
-                                    <div class="row g-2 mt-2">
-                                        <?php for($i = 1; $i <= 4; $i++): ?>
-                                            <div class="col-3">
-                                                <div class="p-2 border rounded text-center">
-                                                    <small class="d-block text-muted mb-1">N<?php echo $i; ?></small>
-                                                    <?php if (isset($disciplina["nota_etapa_{$i}"]['nota'])): ?>
-                                                        <strong><?php echo $disciplina["nota_etapa_{$i}"]['nota']; ?></strong>
-                                                    <?php else: ?>
-                                                        <input type="number" 
-                                                               class="form-control form-control-sm nota-input text-center p-0"
-                                                               style="height: 24px; font-size: 0.875rem;"
-                                                               min="0" 
-                                                               max="100" 
-                                                               step="0.1"
-                                                               data-disciplina="<?php echo htmlspecialchars($disciplina['disciplina']); ?>"
-                                                               data-etapa="<?php echo $i; ?>"
-                                                               placeholder="<?php echo number_format(calcularNotaNecessaria($disciplina), 1); ?>">
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="text-center">
-                                                    <small class="text-muted">
-                                                        Peso <?php echo $i <= 2 ? '2' : '3'; ?>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        <?php endfor; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="alert alert-warning">
-                Não foi possível carregar o boletim. 
-                <?php if (isset($meusDados['tipo_vinculo'])): ?>
-                    <br>Tipo de vínculo: <?php echo htmlspecialchars($meusDados['tipo_vinculo']); ?>
-                <?php endif; ?>
-                <br>Por favor, verifique se você está matriculado no período atual.
-            </div>
-        <?php endif; ?>
-    </div>
+                                            return [
+                                                'nome' => $nome,
+                                                'notas' => [
+                                                    isset($d['nota_etapa_1']['nota']) ? $d['nota_etapa_1']['nota'] : null,
+                                                    isset($d['nota_etapa_2']['nota']) ? $d['nota_etapa_2']['nota'] : null,
+                                                    isset($d['nota_etapa_3']['nota']) ? $d['nota_etapa_3']['nota'] : null,
+                                                    isset($d['nota_etapa_4']['nota']) ? $d['nota_etapa_4']['nota'] : null
+                                                ],
+                                                'media' => isset($d['media_final_disciplina']) ? $d['media_final_disciplina'] : null,
+                                                'frequencia' => isset($d['percentual_carga_horaria_frequentada']) ? $d['percentual_carga_horaria_frequentada'] : null,
+                                            ];
+                                        }, $boletim ?? [])); ?>;
 
-    <!-- Seção do Horário -->
-    <div class="animate-fade-in-up" style="animation-delay: 0.6s">
-        <h3 class="mt-5 mb-4">Horário de Aulas</h3>
-        
-        <?php if (isset($horarios) && is_array($horarios)): ?>
-            <?php mostrarHorarios($horarios); ?>
-        <?php else: ?>
-            <div class="alert alert-warning mt-4">
-                Não foi possível carregar o horário das aulas.
-            </div>
-        <?php endif; ?>
-    </div>
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
-
-            // Timeout para garantir que o modal esteja visível antes de renderizar os gráficos
-            setTimeout(() => {
-                // Dados das disciplinas para os gráficos
-                const disciplinas = <?php echo json_encode(array_map(function ($d) {
-                                        $partes = explode(' - ', $d['disciplina'], 2);
-                                        $nome = isset($partes[1]) ? $partes[1] : $d['disciplina'];
-
-                                        return [
-                                            'nome' => $nome,
-                                            'notas' => [
-                                                isset($d['nota_etapa_1']['nota']) ? $d['nota_etapa_1']['nota'] : null,
-                                                isset($d['nota_etapa_2']['nota']) ? $d['nota_etapa_2']['nota'] : null,
-                                                isset($d['nota_etapa_3']['nota']) ? $d['nota_etapa_3']['nota'] : null,
-                                                isset($d['nota_etapa_4']['nota']) ? $d['nota_etapa_4']['nota'] : null
-                                            ],
-                                            'media' => isset($d['media_final_disciplina']) ? $d['media_final_disciplina'] : null,
-                                            'frequencia' => isset($d['percentual_carga_horaria_frequentada']) ? $d['percentual_carga_horaria_frequentada'] : null,
-                                        ];
-                                    }, $boletim ?? [])); ?>;
-
-                // Renderizar gráfico de notas
-                const ctxNotas = document.getElementById('notasChart');
-                if (ctxNotas) {
-                    const notasChart = new Chart(ctxNotas, {
-                        type: 'bar',
-                        data: {
-                            labels: disciplinas.map(d => d.nome),
-                            datasets: [{
-                                    label: 'Nota 1',
-                                    data: disciplinas.map(d => d.notas[0]),
-                                    backgroundColor: 'rgba(67, 97, 238, 0.7)',
-                                    borderColor: 'rgba(67, 97, 238, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Nota 2',
-                                    data: disciplinas.map(d => d.notas[1]),
-                                    backgroundColor: 'rgba(46, 196, 182, 0.7)',
-                                    borderColor: 'rgba(46, 196, 182, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Nota 3',
-                                    data: disciplinas.map(d => d.notas[2]),
-                                    backgroundColor: 'rgba(255, 159, 28, 0.7)',
-                                    borderColor: 'rgba(255, 159, 28, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Nota 4',
-                                    data: disciplinas.map(d => d.notas[3]),
-                                    backgroundColor: 'rgba(230, 57, 70, 0.7)',
-                                    borderColor: 'rgba(230, 57, 70, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Média',
-                                    data: disciplinas.map(d => d.media),
-                                    type: 'line',
-                                    borderColor: 'rgba(130, 57, 230, 1)',
-                                    backgroundColor: 'rgba(130, 57, 230, 0.1)',
-                                    fill: false,
-                                    borderWidth: 2,
-                                    pointRadius: 4
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false
-                                }
+                    // Renderizar gráfico de notas
+                    const ctxNotas = document.getElementById('notasChart');
+                    if (ctxNotas) {
+                        const notasChart = new Chart(ctxNotas, {
+                            type: 'bar',
+                            data: {
+                                labels: disciplinas.map(d => d.nome),
+                                datasets: [{
+                                        label: 'Nota 1',
+                                        data: disciplinas.map(d => d.notas[0]),
+                                        backgroundColor: 'rgba(67, 97, 238, 0.7)',
+                                        borderColor: 'rgba(67, 97, 238, 1)',
+                                        borderWidth: 1
+                                    },
+                                    {
+                                        label: 'Nota 2',
+                                        data: disciplinas.map(d => d.notas[1]),
+                                        backgroundColor: 'rgba(46, 196, 182, 0.7)',
+                                        borderColor: 'rgba(46, 196, 182, 1)',
+                                        borderWidth: 1
+                                    },
+                                    {
+                                        label: 'Nota 3',
+                                        data: disciplinas.map(d => d.notas[2]),
+                                        backgroundColor: 'rgba(255, 159, 28, 0.7)',
+                                        borderColor: 'rgba(255, 159, 28, 1)',
+                                        borderWidth: 1
+                                    },
+                                    {
+                                        label: 'Nota 4',
+                                        data: disciplinas.map(d => d.notas[3]),
+                                        backgroundColor: 'rgba(230, 57, 70, 0.7)',
+                                        borderColor: 'rgba(230, 57, 70, 1)',
+                                        borderWidth: 1
+                                    },
+                                    {
+                                        label: 'Média',
+                                        data: disciplinas.map(d => d.media),
+                                        type: 'line',
+                                        borderColor: 'rgba(130, 57, 230, 1)',
+                                        backgroundColor: 'rgba(130, 57, 230, 0.1)',
+                                        fill: false,
+                                        borderWidth: 2,
+                                        pointRadius: 4
+                                    }
+                                ]
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    title: {
-                                        display: true,
-                                        text: 'Nota'
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false
                                     }
                                 },
-                                x: {
-                                    ticks: {
-                                        maxRotation: 45,
-                                        minRotation: 45
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        title: {
+                                            display: true,
+                                            text: 'Nota'
+                                        }
+                                    },
+                                    x: {
+                                        ticks: {
+                                            maxRotation: 45,
+                                            minRotation: 45
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                // Renderizar gráfico de frequência
-                const ctxFreq = document.getElementById('frequenciaChart');
-                if (ctxFreq) {
-                    const freqChart = new Chart(ctxFreq, {
-                        type: 'bar',
-                        data: {
-                            labels: disciplinas.map(d => d.nome),
-                            datasets: [{
-                                label: 'Frequência',
-                                data: disciplinas.map(d => d.frequencia),
-                                backgroundColor: disciplinas.map(d => {
-                                    const freq = d.frequencia;
-                                    if (freq === null) return 'rgba(173, 181, 189, 0.7)';
-                                    if (freq < 75) return 'rgba(230, 57, 70, 0.7)';
-                                    if (freq < 85) return 'rgba(255, 159, 28, 0.7)';
-                                    return 'rgba(46, 196, 182, 0.7)';
-                                }),
-                                borderColor: disciplinas.map(d => {
-                                    const freq = d.frequencia;
-                                    if (freq === null) return 'rgba(173, 181, 189, 1)';
-                                    if (freq < 75) return 'rgba(230, 57, 70, 1)';
-                                    if (freq < 85) return 'rgba(255, 159, 28, 1)';
-                                    return 'rgba(46, 196, 182, 1)';
-                                }),
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top'
-                                }
+                    // Renderizar gráfico de frequência
+                    const ctxFreq = document.getElementById('frequenciaChart');
+                    if (ctxFreq) {
+                        const freqChart = new Chart(ctxFreq, {
+                            type: 'bar',
+                            data: {
+                                labels: disciplinas.map(d => d.nome),
+                                datasets: [{
+                                    label: 'Frequência',
+                                    data: disciplinas.map(d => d.frequencia),
+                                    backgroundColor: disciplinas.map(d => {
+                                        const freq = d.frequencia;
+                                        if (freq === null) return 'rgba(173, 181, 189, 0.7)';
+                                        if (freq < 75) return 'rgba(230, 57, 70, 0.7)';
+                                        if (freq < 85) return 'rgba(255, 159, 28, 0.7)';
+                                        return 'rgba(46, 196, 182, 0.7)';
+                                    }),
+                                    borderColor: disciplinas.map(d => {
+                                        const freq = d.frequencia;
+                                        if (freq === null) return 'rgba(173, 181, 189, 1)';
+                                        if (freq < 75) return 'rgba(230, 57, 70, 1)';
+                                        if (freq < 85) return 'rgba(255, 159, 28, 1)';
+                                        return 'rgba(46, 196, 182, 1)';
+                                    }),
+                                    borderWidth: 1
+                                }]
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    title: {
-                                        display: true,
-                                        text: 'Frequência (%)'
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top'
                                     }
                                 },
-                                x: {
-                                    ticks: {
-                                        maxRotation: 45,
-                                        minRotation: 45
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        title: {
+                                            display: true,
+                                            text: 'Frequência (%)'
+                                        }
+                                    },
+                                    x: {
+                                        ticks: {
+                                            maxRotation: 45,
+                                            minRotation: 45
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
-                }
-            }, 300);
-        });
-    </script>
+                        });
+                    }
+                }, 300);
+            });
+        </script>
 
-<<<<<<< HEAD
-    <?php
-    $pageContent = ob_get_clean(); // Captura o conteúdo do buffer
-    require_once 'base.php'; // Inclui o template base
-    ?>
-=======
-<!-- Adicione estes estilos ao arquivo base.php -->
-<style>
-.nota-simulacao {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.nota-input {
-    text-align: center;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.nota-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
-}
-
-.nota-input::placeholder {
-    color: #ffc107;
-    opacity: 1;
-}
-
-/* Ajustes de responsividade */
-@media (max-width: 768px) {
-    .user-status {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .user-status .badge {
-        font-size: 0.8rem;
-    }
-    
-    .user-status img {
-        width: 45px;
-        height: 45px;
-    }
-
-    .impact-section {
-        margin-top: 1.5rem !important;
-    }
-
-    .impact-image {
-        width: auto;
-        height: 120px !important;
-        margin: 1rem auto;
-    }
-
-    .impact-status {
-        font-size: 1.1rem;
-        margin: 1rem 0;
-    }
-
-    /* Ajuste para hero em mobile */
-    .hero-user-info {
-        padding: 0.8rem !important;
-        gap: 0.5rem;
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
-
-    .hero-user-info .badges-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        width: 100%;
-    }
-}
-
-/* Estilos para tabelas em mobile */
-@media (max-width: 768px) {
-    .table-responsive {
-        border: 0;
-        margin-bottom: 0;
-    }
-
-    .table-boletim {
-        font-size: 0.85rem;
-    }
-
-    .table-boletim th {
-        padding: 0.5rem !important;
-        font-size: 0.8rem;
-    }
-
-    .table-boletim td {
-        padding: 0.5rem !important;
-    }
-
-    .nota-simulacao input {
-        width: 50px !important;
-        padding: 0.25rem !important;
-        font-size: 0.8rem;
-    }
-
-    .disciplina-col {
-        max-width: 120px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
-@media (max-width: 768px) {
-    .nota-input {
-        border: none;
-        background: transparent;
-        width: 100%;
-    }
-    
-    .nota-input:focus {
-        outline: none;
-        background: rgba(26, 115, 232, 0.1);
-    }
-
-    .nota-input::placeholder {
-        color: #ffc107;
-        font-size: 0.8rem;
-    }
-    
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.6rem;
-    }
-
-    .card-title {
-        font-size: 1rem;
-        line-height: 1.3;
-    }
-}
-</style>
-
-<?php
-$pageContent = ob_get_clean(); // Captura o conteúdo do buffer
-require_once 'base.php'; // Inclui o template base
-?>
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
+        <?php
+        $pageContent = ob_get_clean(); // Captura o conteúdo do buffer
+        require_once 'base.php'; // Inclui o template base
+        ?>

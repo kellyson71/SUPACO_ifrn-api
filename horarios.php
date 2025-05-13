@@ -2,15 +2,25 @@
 function parseHorario($horarioStr) {
     // Exemplo: "2M12" => ['dia' => 2, 'turno' => 'M', 'aulas' => ['1', '2']]
     // ou "2V12" => ['dia' => 2, 'turno' => 'V', 'aulas' => ['1', '2']]
+    // ou "2V12 / 3V34" => dois horários diferentes
+
     if (empty($horarioStr)) {
         return [];
     }
-    
-    $horarios = explode(' / ', $horarioStr);
+
+    // Limpa possíveis caracteres problemáticos
+    $horarioStr = trim($horarioStr);
+
+    // Verifica se há múltiplos horários separados por /
+    $horarios = preg_split('/\s*\/\s*/', $horarioStr);
     $result = [];
     
     foreach ($horarios as $horario) {
-        if (preg_match('/(\d)([MTV])(\d+)/', $horario, $matches)) {
+        $horario = trim($horario);
+        if (empty($horario)) continue;
+
+        // Padrão principal: 2V12 (dia, turno, aulas)
+        if (preg_match('/^(\d)([MTV])(\d+)$/', $horario, $matches)) {
             $result[] = [
                 'dia' => (int)$matches[1],
                 'turno' => $matches[2],
@@ -34,7 +44,6 @@ function mostrarHorarios($horarios) {
         ['hora' => '10:30 - 11:15', 'codigo' => '5', 'turno' => 'M'],
         ['hora' => '11:15 - 12:00', 'codigo' => '6', 'turno' => 'M']
     ];
-<<<<<<< HEAD
 
     $aulasTarde = [
         ['hora' => '13:00 - 13:45', 'codigo' => '1', 'turno' => 'V'],
@@ -68,11 +77,6 @@ function mostrarHorarios($horarios) {
         $temAulasTarde = true;
     }
 
-=======
-    
-    // Versão Desktop
-    echo '<div class="d-none d-md-block">';
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
     echo '<div class="table-responsive">';
 
     // Tabela para horários da Manhã
@@ -113,13 +117,8 @@ function exibirTabelaHorarios($horarios, $dias, $aulas)
                     foreach ($horariosArray as $h) {
                         if ($h['dia'] == $dia && $h['turno'] == $aula['turno'] && in_array($aula['codigo'], $h['aulas'])) {
                             echo '<div class="disciplina-info">';
-<<<<<<< HEAD
                             echo '<span class="disciplina-codigo">' . htmlspecialchars($disciplina['sigla']) . '</span>';
                             echo '<strong class="disciplina-nome">' . htmlspecialchars($disciplina['descricao']) . '</strong>';
-=======
-                            echo '<strong class="sigla-mobile">' . htmlspecialchars($disciplina['sigla']) . '</strong>';
-                            echo '<small class="descricao-completa">' . htmlspecialchars($disciplina['descricao']) . '</small>';
->>>>>>> 48799c664a6dadedc72a3088dd6c3fa874c6dc30
                             if (!empty($disciplina['locais_de_aula'][0])) {
                                 echo '<br><small class="text-muted">' . 
                                      htmlspecialchars($disciplina['locais_de_aula'][0]) . 
