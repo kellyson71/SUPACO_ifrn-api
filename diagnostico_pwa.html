@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico PWA - SUPACO</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        button {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        #console {
+            background-color: #212529;
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .timestamp {
+            color: #6c757d;
+        }
+        .log-error { color: #dc3545; }
+        .log-success { color: #28a745; }
+        .log-warning { color: #ffc107; }
+        .log-info { color: #17a2b8; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+        }
+        .resource-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico Completo PWA - SUPACO</h1>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>📋 Informações do Navegador</h3>
+                <table>
+                    <tr><td>User Agent:</td><td id="userAgent"></td></tr>
+                    <tr><td>Online:</td><td id="onlineStatus"></td></tr>
+                    <tr><td>Service Worker:</td><td id="swSupport"></td></tr>
+                    <tr><td>Cache API:</td><td id="cacheSupport"></td></tr>
+                    <tr><td>IndexedDB:</td><td id="idbSupport"></td></tr>
+                    <tr><td>Notifications:</td><td id="notificationSupport"></td></tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>📱 Status PWA</h3>
+                <div id="manifestCheck" class="status info">⏳ Verificando manifest...</div>
+                <div id="swCheck" class="status info">⏳ Verificando Service Worker...</div>
+                <div id="installCheck" class="status info">⏳ Verificando instalabilidade...</div>
+                <button onclick="checkPWAStatus()">🔄 Verificar PWA</button>
+            </div>
+
+            <div class="card">
+                <h3>💾 Status do Cache</h3>
+                <div id="cacheInfo"></div>
+                <button onclick="checkCacheStatus()" class="btn-small">📊 Verificar Cache</button>
+                <button onclick="clearAllCaches()" class="btn-small">🗑️ Limpar Cache</button>
+            </div>
+
+            <div class="card">
+                <h3>🌐 Teste de Recursos</h3>
+                <div id="resourceTests"></div>
+                <button onclick="testResourceLoading()" class="btn-small">🔗 Testar Recursos</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📂 Recursos em Cache</h3>
+            <div id="cachedResources" class="resource-list">
+                Carregando recursos em cache...
+            </div>
+            <button onclick="listCachedResources()" class="btn-small">📋 Listar Recursos</button>
+        </div>
+
+        <div>
+            <h3>🖥️ Console de Diagnóstico</h3>
+            <button onclick="runFullDiagnostic()">🔍 Diagnóstico Completo</button>
+            <button onclick="clearConsole()">🗑️ Limpar Console</button>
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        let consoleElement;
+
+        // Inicialização
+        window.addEventListener('load', () => {
+            consoleElement = document.getElementById('console');
+            showBrowserInfo();
+            setTimeout(runFullDiagnostic, 1000);
+        });
+
+        // Sistema de log no console personalizado
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = `log-${type}`;
+            const logEntry = `<span class="timestamp">[${timestamp}]</span> <span class="${logClass}">${message}</span>\n`;
+            consoleElement.innerHTML += logEntry;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+        }
+
+        function clearConsole() {
+            consoleElement.innerHTML = '';
+        }
+
+        // Informações do navegador
+        function showBrowserInfo() {
+            document.getElementById('userAgent').textContent = navigator.userAgent.substring(0, 50) + '...';
+            document.getElementById('onlineStatus').textContent = navigator.onLine ? '✅ Online' : '❌ Offline';
+            document.getElementById('swSupport').textContent = 'serviceWorker' in navigator ? '✅ Suportado' : '❌ Não suportado';
+            document.getElementById('cacheSupport').textContent = 'caches' in window ? '✅ Suportado' : '❌ Não suportado';
+            document.getElementById('idbSupport').textContent = 'indexedDB' in window ? '✅ Suportado' : '❌ Não suportado';
+            document.getElementById('notificationSupport').textContent = 'Notification' in window ? '✅ Suportado' : '❌ Não suportado';
+        }
+
+        // Verificar status do PWA
+        async function checkPWAStatus() {
+            log('=== VERIFICANDO STATUS PWA ===', 'info');
+            
+            // Teste 1: Manifest
+            try {
+                const manifestResponse = await fetch('/SUAP/manifest.json');
+                if (manifestResponse.ok) {
+                    const manifest = await manifestResponse.json();
+                    log(`✅ Manifest OK: ${manifest.name}`, 'success');
+                    document.getElementById('manifestCheck').innerHTML = `✅ Manifest: ${manifest.name}`;
+                    document.getElementById('manifestCheck').className = 'status success';
+                } else {
+                    throw new Error(`Status: ${manifestResponse.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erro no manifest: ${error.message}`, 'error');
+                document.getElementById('manifestCheck').innerHTML = '❌ Manifest com erro';
+                document.getElementById('manifestCheck').className = 'status error';
+            }
+
+            // Teste 2: Service Worker
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.register('/SUAP/sw.js');
+                    log('✅ Service Worker registrado', 'success');
+                    
+                    if (registration.active) {
+                        log('✅ Service Worker ativo', 'success');
+                        document.getElementById('swCheck').innerHTML = '✅ Service Worker ativo';
+                        document.getElementById('swCheck').className = 'status success';
+                    } else if (registration.installing) {
+                        log('⏳ Service Worker instalando...', 'warning');
+                        document.getElementById('swCheck').innerHTML = '⏳ Service Worker instalando';
+                        document.getElementById('swCheck').className = 'status warning';
+                        
+                        registration.installing.addEventListener('statechange', () => {
+                            if (registration.installing.state === 'activated') {
+                                log('✅ Service Worker ativado', 'success');
+                                document.getElementById('swCheck').innerHTML = '✅ Service Worker ativo';
+                                document.getElementById('swCheck').className = 'status success';
+                            }
+                        });
+                    }
+                } else {
+                    throw new Error('Service Worker não suportado');
+                }
+            } catch (error) {
+                log(`❌ Erro no Service Worker: ${error.message}`, 'error');
+                document.getElementById('swCheck').innerHTML = '❌ Service Worker com erro';
+                document.getElementById('swCheck').className = 'status error';
+            }
+
+            // Teste 3: Instalabilidade
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                log('✅ PWA está instalado', 'success');
+                document.getElementById('installCheck').innerHTML = '✅ PWA instalado';
+                document.getElementById('installCheck').className = 'status success';
+            } else {
+                log('📱 PWA não está instalado (ainda pode ser instalável)', 'info');
+                document.getElementById('installCheck').innerHTML = '📱 PWA não instalado';
+                document.getElementById('installCheck').className = 'status info';
+            }
+        }
+
+        // Verificar status do cache
+        async function checkCacheStatus() {
+            try {
+                const cacheNames = await caches.keys();
+                log(`Encontrados ${cacheNames.length} caches`, 'info');
+                
+                let cacheInfo = '<table><tr><th>Cache</th><th>Itens</th></tr>';
+                let totalItems = 0;
+                
+                for (const name of cacheNames) {
+                    const cache = await caches.open(name);
+                    const keys = await cache.keys();
+                    cacheInfo += `<tr><td>${name}</td><td>${keys.length}</td></tr>`;
+                    totalItems += keys.length;
+                    log(`Cache "${name}": ${keys.length} itens`, 'info');
+                }
+                
+                cacheInfo += `<tr><td><strong>Total</strong></td><td><strong>${totalItems}</strong></td></tr></table>`;
+                document.getElementById('cacheInfo').innerHTML = cacheInfo;
+                
+            } catch (error) {
+                log(`Erro ao verificar cache: ${error.message}`, 'error');
+                document.getElementById('cacheInfo').innerHTML = 'Erro ao verificar cache';
+            }
+        }
+
+        // Listar recursos em cache
+        async function listCachedResources() {
+            try {
+                const cacheNames = await caches.keys();
+                let resourceList = '';
+                
+                for (const name of cacheNames) {
+                    const cache = await caches.open(name);
+                    const keys = await cache.keys();
+                    
+                    resourceList += `<strong>${name}:</strong><br>`;
+                    keys.forEach(request => {
+                        resourceList += `• ${request.url}<br>`;
+                    });
+                    resourceList += '<br>';
+                }
+                
+                document.getElementById('cachedResources').innerHTML = resourceList || 'Nenhum recurso em cache';
+                
+            } catch (error) {
+                log(`Erro ao listar recursos: ${error.message}`, 'error');
+                document.getElementById('cachedResources').innerHTML = 'Erro ao listar recursos';
+            }
+        }
+
+        // Limpar todos os caches
+        async function clearAllCaches() {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                log(`${cacheNames.length} caches removidos`, 'success');
+                checkCacheStatus();
+                listCachedResources();
+            } catch (error) {
+                log(`Erro ao limpar cache: ${error.message}`, 'error');
+            }
+        }
+
+        // Testar carregamento de recursos
+        async function testResourceLoading() {
+            const resources = [
+                '/SUAP/manifest.json',
+                '/SUAP/sw.js',
+                '/SUAP/assets/offline_optimized.js',
+                '/SUAP/index_pwa.php',
+                '/SUAP/api_offline.php?test=1'
+            ];
+
+            let testResults = '<table><tr><th>Recurso</th><th>Status</th><th>Tamanho</th></tr>';
+            
+            for (const resource of resources) {
+                try {
+                    const response = await fetch(resource);
+                    const size = response.headers.get('content-length') || 'N/A';
+                    const status = response.ok ? '✅ OK' : `❌ ${response.status}`;
+                    testResults += `<tr><td>${resource}</td><td>${status}</td><td>${size}</td></tr>`;
+                    log(`${resource}: ${response.status}`, response.ok ? 'success' : 'error');
+                } catch (error) {
+                    testResults += `<tr><td>${resource}</td><td>❌ Erro</td><td>-</td></tr>`;
+                    log(`${resource}: ${error.message}`, 'error');
+                }
+            }
+            
+            testResults += '</table>';
+            document.getElementById('resourceTests').innerHTML = testResults;
+        }
+
+        // Diagnóstico completo
+        async function runFullDiagnostic() {
+            log('=== INICIANDO DIAGNÓSTICO COMPLETO ===', 'info');
+            clearConsole();
+            
+            log('Verificando informações do navegador...', 'info');
+            showBrowserInfo();
+            
+            log('Verificando status PWA...', 'info');
+            await checkPWAStatus();
+            
+            log('Verificando cache...', 'info');
+            await checkCacheStatus();
+            
+            log('Listando recursos em cache...', 'info');
+            await listCachedResources();
+            
+            log('Testando carregamento de recursos...', 'info');
+            await testResourceLoading();
+            
+            log('=== DIAGNÓSTICO COMPLETO FINALIZADO ===', 'success');
+        }
+
+        // Monitorar mudanças de conexão
+        window.addEventListener('online', () => {
+            log('🌐 Conexão restaurada', 'success');
+            showBrowserInfo();
+        });
+
+        window.addEventListener('offline', () => {
+            log('⚠️ Conexão perdida', 'warning');
+            showBrowserInfo();
+        });
+    </script>
+</body>
+</html>

@@ -58,3 +58,72 @@ function converterDataAPI($dataStr)
         return new DateTime();
     }
 }
+
+/**
+ * Faz requisições para a API do SUAP
+ * 
+ * @param string $endpoint Endpoint da API
+ * @param string $token Token de acesso
+ * @return array Dados retornados pela API
+ */
+function fetchApi($endpoint, $token)
+{
+    $url = 'https://suap.ifrn.edu.br/api/v2/' . $endpoint;
+
+    $headers = [
+        'Authorization: Bearer ' . $token,
+        'Content-Type: application/json'
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        error_log("Erro cURL: " . $error);
+        return [];
+    }
+
+    if ($httpCode !== 200) {
+        error_log("Erro HTTP: " . $httpCode);
+        return [];
+    }
+
+    $data = json_decode($response, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("Erro JSON: " . json_last_error_msg());
+        return [];
+    }
+
+    return $data;
+}
+
+/**
+ * Endpoint específico para testes do PWA
+ * Retorna dados básicos de teste
+ */
+function handleTestEndpoint()
+{
+    return [
+        'status' => 'success',
+        'message' => 'API offline funcionando',
+        'timestamp' => time(),
+        'version' => '2.0',
+        'endpoints' => [
+            'boletim',
+            'horarios',
+            'meusdados',
+            'atualizar_todos',
+            'test'
+        ]
+    ];
+}

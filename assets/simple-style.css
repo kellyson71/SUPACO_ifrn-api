@@ -1,0 +1,91 @@
+/* SUPACO - CSS Ultra Simplificado */
+
+:root {
+  --primary: #7353ba;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text: #374151;
+  --border: #e5e7eb;
+  --bg: #ffffff;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+/* Navbar clean */
+.navbar-custom {
+  background: var(--primary);
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar-custom .nav-link {
+  color: white !important;
+}
+
+.navbar-custom .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Cards limpos */
+.card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.card:hover {
+  border-color: var(--primary);
+}
+
+/* Tabelas simples */
+.table thead th {
+  background: #f8f9fa;
+  border: none;
+  color: var(--text);
+}
+
+.table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+/* Remover todas as animações */
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Estilos básicos apenas */
+.btn {
+  border-radius: 4px;
+}
+
+.badge {
+  border-radius: 4px;
+}
+
+/* Cores de status simples */
+.text-success {
+  color: var(--success) !important;
+}
+.text-warning {
+  color: var(--warning) !important;
+}
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.bg-success {
+  background: var(--success) !important;
+}
+.bg-warning {
+  background: var(--warning) !important;
+}
+.bg-danger {
+  background: var(--danger) !important;
+}

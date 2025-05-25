@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Notificação</title>
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>Teste de Notificação</h1>
+        <button onclick="testNotification()">Testar Notificação</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        function showToast(message, type = 'success', duration = 5000) {
+            const bgColors = {
+                success: "linear-gradient(to right, #10b981, #059669)",
+                warning: "linear-gradient(to right, #f59e0b, #d97706)",
+                danger: "linear-gradient(to right, #ef4444, #dc2626)",
+                info: "linear-gradient(to right, #06b6d4, #0891b2)"
+            };
+
+            const icons = {
+                success: '<i class="fas fa-check-circle"></i>',
+                warning: '<i class="fas fa-exclamation-circle"></i>',
+                danger: '<i class="fas fa-exclamation-triangle"></i>',
+                info: '<i class="fas fa-info-circle"></i>'
+            };
+
+            Toastify({
+                text: `${icons[type]} ${message}`,
+                duration: duration,
+                gravity: "top",
+                position: "right",
+                className: "toast-custom",
+                escapeMarkup: false,
+                style: {
+                    background: bgColors[type],
+                    boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+                    borderRadius: "8px",
+                }
+            }).showToast();
+        }
+
+        function testNotification() {
+            showToast('Bem-vindo(a) ao SUPACO! Dados acadêmicos carregados.', 'success');
+        }
+
+        // Auto-teste
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                showToast('Teste automático da notificação!', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

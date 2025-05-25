@@ -39,7 +39,6 @@ function showToast(message, type = "success", duration = 5000) {
     danger: '<i class="fas fa-exclamation-triangle me-2"></i>',
     info: '<i class="fas fa-info-circle me-2"></i>',
   };
-
   Toastify({
     text: icons[type] + message,
     duration: duration,
