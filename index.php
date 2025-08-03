@@ -930,18 +930,105 @@ if ($totalDisciplinas > 0) {
     $countFrequencia = 0;
 
     foreach ($boletim as $disciplina) {
-        if (isset($disciplina['media_final_disciplina']) && $disciplina['media_final_disciplina'] !== null) {
-            $somaNotas += $disciplina['media_final_disciplina'];
-            $countNotas++;
+        // Calcular média manualmente pegando todas as notas disponíveis
+        $notasDisciplina = array();
+        
+        error_log("=== DEBUG MÉDIA - DISCIPLINA: " . $disciplina['disciplina'] . " ===");
+        
+        // Verificar notas do primeiro semestre
+        if (isset($disciplina['primeiro_semestre'])) {
+            error_log("Primeiro semestre encontrado");
+            for ($i = 1; $i <= 4; $i++) {
+                $notaKey = "nota_etapa_{$i}";
+                if (isset($disciplina['primeiro_semestre'][$notaKey]['nota']) && 
+                    $disciplina['primeiro_semestre'][$notaKey]['nota'] !== null && 
+                    $disciplina['primeiro_semestre'][$notaKey]['nota'] !== '') {
+                    $nota = floatval($disciplina['primeiro_semestre'][$notaKey]['nota']);
+                    $notasDisciplina[] = $nota;
+                    error_log("Nota etapa {$i}: {$nota}");
+                }
+            }
+        } else {
+            error_log("Primeiro semestre não encontrado");
         }
+        
+        // Verificar notas do segundo semestre
+        if (isset($disciplina['segundo_semestre'])) {
+            error_log("Segundo semestre encontrado");
+            for ($i = 1; $i <= 4; $i++) {
+                $notaKey = "nota_etapa_{$i}";
+                if (isset($disciplina['segundo_semestre'][$notaKey]['nota']) && 
+                    $disciplina['segundo_semestre'][$notaKey]['nota'] !== null && 
+                    $disciplina['segundo_semestre'][$notaKey]['nota'] !== '') {
+                    $nota = floatval($disciplina['segundo_semestre'][$notaKey]['nota']);
+                    $notasDisciplina[] = $nota;
+                    error_log("Nota etapa {$i}: {$nota}");
+                }
+            }
+        } else {
+            error_log("Segundo semestre não encontrado");
+        }
+        
+        // Verificar notas diretas da disciplina (estrutura atual)
+        if (isset($disciplina['nota_etapa_1']['nota']) && $disciplina['nota_etapa_1']['nota'] !== null && $disciplina['nota_etapa_1']['nota'] !== '') {
+            $nota = floatval($disciplina['nota_etapa_1']['nota']);
+            $notasDisciplina[] = $nota;
+            error_log("Nota etapa 1 direta: {$nota}");
+        }
+        if (isset($disciplina['nota_etapa_2']['nota']) && $disciplina['nota_etapa_2']['nota'] !== null && $disciplina['nota_etapa_2']['nota'] !== '') {
+            $nota = floatval($disciplina['nota_etapa_2']['nota']);
+            $notasDisciplina[] = $nota;
+            error_log("Nota etapa 2 direta: {$nota}");
+        }
+        if (isset($disciplina['nota_etapa_3']['nota']) && $disciplina['nota_etapa_3']['nota'] !== null && $disciplina['nota_etapa_3']['nota'] !== '') {
+            $nota = floatval($disciplina['nota_etapa_3']['nota']);
+            $notasDisciplina[] = $nota;
+            error_log("Nota etapa 3 direta: {$nota}");
+        }
+        if (isset($disciplina['nota_etapa_4']['nota']) && $disciplina['nota_etapa_4']['nota'] !== null && $disciplina['nota_etapa_4']['nota'] !== '') {
+            $nota = floatval($disciplina['nota_etapa_4']['nota']);
+            $notasDisciplina[] = $nota;
+            error_log("Nota etapa 4 direta: {$nota}");
+        }
+        
+        // Se não encontrou notas específicas, usar a média final da disciplina
+        if (empty($notasDisciplina) && isset($disciplina['media_final_disciplina']) && $disciplina['media_final_disciplina'] !== null) {
+            $notasDisciplina[] = $disciplina['media_final_disciplina'];
+            error_log("Usando média final: " . $disciplina['media_final_disciplina']);
+        }
+        
+        error_log("Total de notas encontradas: " . count($notasDisciplina));
+        error_log("Notas: " . print_r($notasDisciplina, true));
+        
+        // Calcular média da disciplina se houver notas
+        if (!empty($notasDisciplina)) {
+            $mediaDisciplina = array_sum($notasDisciplina) / count($notasDisciplina);
+            $somaNotas += $mediaDisciplina;
+            $countNotas++;
+            error_log("Média da disciplina: {$mediaDisciplina}");
+            error_log("Soma total até agora: {$somaNotas}, Count: {$countNotas}");
+        } else {
+            error_log("Nenhuma nota encontrada para esta disciplina");
+        }
+        
+        // Calcular frequência
         if (isset($disciplina['percentual_carga_horaria_frequentada']) && $disciplina['percentual_carga_horaria_frequentada'] !== null) {
             $somaFrequencia += $disciplina['percentual_carga_horaria_frequentada'];
             $countFrequencia++;
         }
+        
+        error_log("=== FIM DEBUG MÉDIA ===");
     }
 
     if ($countNotas > 0) {
         $mediaGeral = $somaNotas / $countNotas;
+        error_log("=== RESULTADO FINAL MÉDIA ===");
+        error_log("Soma total: {$somaNotas}");
+        error_log("Count total: {$countNotas}");
+        error_log("Média geral calculada: {$mediaGeral}");
+        error_log("=== FIM RESULTADO FINAL ===");
+    } else {
+        error_log("NENHUMA NOTA ENCONTRADA - Média geral permanece 0");
     }
     if ($countFrequencia > 0) {
         $frequenciaGeral = $somaFrequencia / $countFrequencia;
@@ -1097,7 +1184,12 @@ if (!empty($proximaAula['aulas'])) {
             <div class="stat-card">
                 <div class="stat-content">
                     <div class="stat-icon-custom bg-purple-500">M</div>
-                    <div class="stat-value"><?php echo number_format($mediaGeral, 1); ?></div>
+                    <div class="stat-value"><?php 
+                        error_log("=== EXIBIÇÃO MÉDIA ===");
+                        error_log("Valor da média geral: " . $mediaGeral);
+                        error_log("Valor formatado: " . number_format($mediaGeral, 1));
+                        echo number_format($mediaGeral, 1); 
+                    ?></div>
                     <div class="stat-label">Média</div>
                 </div>
             </div>

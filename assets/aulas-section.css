@@ -6,7 +6,7 @@
   margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
   color: var(--text-white);
-  background: rgba(39, 39, 42, 0.3);
+  background: rgba(26, 29, 36, 0.3);
   border-radius: 1rem;
   margin-top: 2rem;
   border: 1px solid var(--border-zinc-800);
@@ -43,7 +43,7 @@
 
 /* Cards de aula melhorados */
 .aula-card {
-  background: linear-gradient(135deg, rgba(39, 39, 42, 0.8) 0%, rgba(63, 63, 70, 0.6) 100%);
+  background: linear-gradient(135deg, rgba(26, 29, 36, 0.8) 0%, rgba(42, 45, 54, 0.6) 100%);
   border: 1px solid var(--border-zinc-700);
   border-radius: 1rem;
   padding: 1.5rem;

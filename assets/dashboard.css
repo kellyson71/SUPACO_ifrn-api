@@ -5,46 +5,46 @@
 /* Container principal do dashboard */
 .dashboard-container {
   padding: 2rem 0;
-  background-color: var(--neutral-100);
+  background-color: var(--bg-black);
 }
 
 /* Cabeçalho do dashboard */
 .dashboard-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--neutral-200);
+  border-bottom: 1px solid var(--border-zinc-800);
 }
 
 .dashboard-title h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--primary-dark);
+  color: var(--text-white);
   margin-bottom: 0.25rem;
 }
 
 .dashboard-title p {
-  color: var(--neutral-600);
+  color: var(--text-zinc-400);
 }
 
 .dashboard-actions .btn-group {
-  background: white;
+  background: rgba(26, 29, 36, 0.8);
   border-radius: 8px;
 }
 
 .dashboard-actions .btn {
   padding: 0.5rem;
-  color: var(--neutral-700);
+  color: var(--text-zinc-300);
   transition: all 0.2s ease;
 }
 
 .dashboard-actions .btn:hover {
-  color: var(--primary-color);
-  background-color: var(--primary-light);
+  color: var(--blue-400);
+  background-color: rgba(59, 130, 246, 0.1);
 }
 
 /* Cartões de informação */
 .dashboard-card {
-  background-color: white;
+  background-color: rgba(26, 29, 36, 0.9);
   border-radius: var(--card-border-radius);
   box-shadow: var(--shadow-sm);
   margin-bottom: 1.5rem;
@@ -60,8 +60,8 @@
 
 .dashboard-card-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--neutral-200);
-  background-color: white;
+  border-bottom: 1px solid var(--border-zinc-800);
+  background-color: rgba(42, 45, 54, 0.5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -71,13 +71,13 @@
   font-weight: 600;
   font-size: 1rem;
   margin: 0;
-  color: var(--neutral-800);
+  color: var(--text-white);
   display: flex;
   align-items: center;
 }
 
 .dashboard-card-title i {
-  color: var(--primary-color);
+  color: var(--blue-400);
   margin-right: 0.5rem;
 }
 
@@ -94,7 +94,7 @@
   font-size: 1.15rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--primary-dark);
+  color: var(--text-white);
   display: flex;
   align-items: center;
 }

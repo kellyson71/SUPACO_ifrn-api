@@ -5,9 +5,9 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding: 0.75rem;
-  background: rgba(96, 165, 250, 0.1);
+  background: rgba(59, 130, 246, 0.1);
   border-radius: 0.5rem;
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .next-class-info i {
@@ -51,7 +51,7 @@
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
-  background-color: rgba(39, 39, 42, 0.5);
+  background-color: rgba(26, 29, 36, 0.5);
   border: 1px solid var(--border-zinc-800);
   border-radius: 1rem;
   color: var(--text-zinc-400);
@@ -70,7 +70,7 @@
 
 /* Cards de aula */
 .aula-card {
-  background-color: rgba(39, 39, 42, 0.5);
+  background-color: rgba(26, 29, 36, 0.5);
   border: 1px solid var(--border-zinc-800);
   border-radius: 1rem;
   padding: 1.5rem;

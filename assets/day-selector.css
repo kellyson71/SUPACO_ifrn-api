@@ -12,9 +12,9 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(26, 29, 36, 0.8);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(42, 45, 54, 0.5);
   border-radius: 6px;
   padding: 6px 30px 6px 12px;
   width: 100%;
@@ -24,7 +24,7 @@
 }
 
 .day-select:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(42, 45, 54, 0.9);
 }
 
 .day-select:focus {
@@ -44,21 +44,21 @@
 
 /* Estilização para as opções */
 .day-select option {
-  background-color: #fff;
-  color: #333;
+  background-color: rgba(26, 29, 36, 0.95);
+  color: #FFFFFF;
   padding: 10px;
 }
 
 .day-select option.text-warning {
-  color: #ffc107 !important;
+  color: #F59E0B !important;
 }
 
 .day-select option.text-danger {
-  color: #dc3545 !important;
+  color: #EF4444 !important;
 }
 
 .holiday-badge {
   margin-left: 5px;
-  color: #dc3545;
+  color: #EF4444;
   font-size: 0.8em;
 }

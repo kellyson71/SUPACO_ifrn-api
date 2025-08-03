@@ -1,13 +1,13 @@
 /* SUPACO - CSS Ultra Simplificado */
 
 :root {
-  --primary: #7353ba;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --text: #374151;
-  --border: #e5e7eb;
-  --bg: #ffffff;
+  --primary: #3B82F6;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --text: #FFFFFF;
+  --border: #2A2D36;
+  --bg: #0F1116;
 }
 
 body {
@@ -43,13 +43,13 @@ body {
 
 /* Tabelas simples */
 .table thead th {
-  background: #f8f9fa;
+  background: rgba(26, 29, 36, 0.8);
   border: none;
   color: var(--text);
 }
 
 .table tbody tr:hover {
-  background: #f8f9fa;
+  background: rgba(42, 45, 54, 0.5);
 }
 
 /* Remover todas as animações */

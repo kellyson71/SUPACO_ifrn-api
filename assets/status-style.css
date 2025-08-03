@@ -50,7 +50,7 @@
 .hero-card .badge.bg-white {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(26, 29, 36, 0.95) !important;
 }
 
 .hero-card .badge {
@@ -67,7 +67,7 @@
 
 /* Adicionar fundo com opacidade atrás do texto para melhorar legibilidade */
 .hero-text-container {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(15, 17, 22, 0.8);
   padding: 12px 18px;
   border-radius: 12px;
   backdrop-filter: blur(4px);
@@ -77,7 +77,7 @@
 }
 
 .hero-text-container:hover {
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(15, 17, 22, 0.9);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 

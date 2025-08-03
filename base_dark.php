@@ -30,20 +30,20 @@
     <style>
         /* Tema escuro global override Bootstrap */
         :root {
-            --bg-black: #000000;
-            --bg-zinc-900: #18181b;
-            --bg-zinc-800: #27272a;
+            --bg-black: #0F1116;
+            --bg-zinc-900: #1A1D24;
+            --bg-zinc-800: #2A2D36;
             --bg-zinc-700: #3f3f46;
-            --text-white: #ffffff;
-            --text-zinc-300: #d4d4d8;
-            --text-zinc-400: #a1a1aa;
+            --text-white: #FFFFFF;
+            --text-zinc-300: #D1D5E0;
+            --text-zinc-400: #A0A3B1;
             --text-zinc-500: #71717a;
-            --emerald-400: #34d399;
-            --emerald-500: #10b981;
-            --red-400: #f87171;
-            --red-500: #ef4444;
-            --blue-400: #60a5fa;
-            --border-zinc-800: #27272a;
+            --emerald-400: #22C55E;
+            --emerald-500: #22C55E;
+            --red-400: #EF4444;
+            --red-500: #EF4444;
+            --blue-400: #3B82F6;
+            --border-zinc-800: #2A2D36;
         }
 
         body {

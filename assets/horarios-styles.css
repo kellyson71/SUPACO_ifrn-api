@@ -5,7 +5,7 @@
     padding: 5px;
     margin: 2px;
     border-radius: 4px;
-    background-color: #f8f9fa;
+    background-color: rgba(26, 29, 36, 0.8);
     font-size: 0.85em;
 }
 .disciplina-info small {
@@ -17,7 +17,7 @@
 .horario-mobile .nav-pills {
     gap: 0.5rem;
     padding: 0.5rem;
-    background: rgba(255,255,255,0.5);
+    background: rgba(26, 29, 36, 0.5);
     border-radius: 10px;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .horario-item {
-    background: white;
+    background: rgba(26, 29, 36, 0.9);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -41,19 +41,19 @@
 
 .horario-header {
     padding: 0.5rem;
-    background: rgba(0,0,0,0.02);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background: rgba(42, 45, 54, 0.3);
+    border-bottom: 1px solid rgba(42, 45, 54, 0.2);
 }
 
 .card-aula {
     margin: 0.5rem;
     border: none;
-    background: rgba(26, 115, 232, 0.03);
-    border-left: 3px solid var(--primary-color);
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid var(--blue-400);
 }
 
 .card-aula:hover {
-    background: rgba(26, 115, 232, 0.05);
+    background: rgba(59, 130, 246, 0.15);
 }
 
 /* Ajustes responsivos */
