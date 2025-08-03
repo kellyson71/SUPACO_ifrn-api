@@ -20,558 +20,551 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SUPACO</title>
-    <!-- CSS -->
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    
     <style>
+        /* Dark Theme Modern Design - Mesmo padrão do index.php */
         :root {
-            --primary-color: #1a73e8;
-            --primary-dark: #0d47a1;
+            --bg-black: #000000;
+            --bg-zinc-900: #18181b;
+            --bg-zinc-800: #27272a;
+            --bg-zinc-700: #3f3f46;
+            --text-white: #ffffff;
+            --text-zinc-300: #d4d4d8;
+            --text-zinc-400: #a1a1aa;
+            --text-zinc-500: #71717a;
+            --emerald-400: #34d399;
+            --emerald-500: #10b981;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --purple-400: #a78bfa;
+            --purple-500: #8b5cf6;
+            --border-zinc-800: #27272a;
+            --border-zinc-700: #3f3f46;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-white);
             min-height: 100vh;
             overflow-x: hidden;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        .backdrop-blur-lg {
+        /* Grid Background - Mesmo do index.php */
+        .grid-background {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            background-color: var(--bg-black);
+            background-image: linear-gradient(to right, #262626 1px, transparent 1px),
+                linear-gradient(to bottom, #262626 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 20%,
+                var(--bg-black)
+            );
+            pointer-events: none;
+        }
+
+        /* Container principal */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-content {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .login-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* Seção de apresentação */
+        .presentation-section {
+            padding: 2rem;
+        }
+
+        .brand-header {
+            margin-bottom: 3rem;
+        }
+
+        .brand-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-zinc-400);
+            margin-bottom: 1.5rem;
+        }
+
+        .dev-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: var(--text-white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .dev-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-white);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-card {
+            background: rgba(39, 39, 42, 0.5);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            background: rgba(39, 39, 42, 0.7);
+            border-color: var(--emerald-400);
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.2);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--emerald-400), var(--emerald-500));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: var(--text-zinc-400);
+            line-height: 1.5;
+        }
+
+        /* Seção de login */
+        .login-section {
+            background: rgba(39, 39, 42, 0.3);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 1.5rem;
+            padding: 3rem;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .text-shadow {
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-zinc-400);
+            font-size: 1rem;
+        }
+
+        /* Botão de login */
+        .login-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--emerald-400), var(--emerald-500));
             border: none;
-            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+            border-radius: 1rem;
+            color: var(--text-white);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.6);
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(52, 211, 153, 0.4);
+            color: var(--text-white);
+            text-decoration: none;
         }
 
-        .card {
+        /* Alertas */
+        .alert {
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red-400);
+        }
+
+        .alert-info {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: var(--blue-400);
+        }
+
+        .alert-icon {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-zinc-800);
+        }
+
+        .footer-text {
+            color: var(--text-zinc-500);
+            font-size: 0.9rem;
+        }
+
+        .heart-icon {
+            color: var(--red-400);
+            animation: heartbeat 2s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Header flutuante */
+        .floating-header {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(39, 39, 42, 0.8);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 50px;
+            backdrop-filter: blur(20px);
+            color: var(--text-white);
+            text-decoration: none;
             transition: all 0.3s ease;
         }
 
-        .card:hover {
+        .floating-header:hover {
+            background: rgba(39, 39, 42, 0.9);
+            color: var(--text-white);
+            text-decoration: none;
             transform: translateY(-2px);
         }
 
-        .text-white-50 {
-            color: rgba(255, 255, 255, 0.85) !important;
+        .version-badge {
+            padding: 0.25rem 0.75rem;
+            background: rgba(52, 211, 153, 0.2);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--emerald-400);
         }
 
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        .beta-badge {
+            padding: 0.25rem 0.75rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--purple-400);
         }
 
-        @keyframes fadeInUp {
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 1rem;
+            }
+
+            .brand-title {
+                font-size: 2.5rem;
+            }
+
+            .login-section {
+                padding: 2rem;
+            }
+
+            .floating-header {
+                top: 1rem;
+                right: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .features-grid {
+                gap: 1rem;
+            }
+
+            .feature-card {
+                padding: 1rem;
+            }
+        }
+
+        /* Animações */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out;
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
         }
 
-        /* Estilos adicionais para melhor visual */
-        .feature-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .feature-icon {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        .login-section {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .login-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Estilos adicionais para o pattern e header */
-        .pattern-overlay {
-            background-image: url('assets/pattern.png');
-            background-size: 20px 20px;
-            opacity: 0.03;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .creative-header {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .creative-header:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            color: white;
-        }
-
-        .stats-pill {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        /* Ajuste do pattern overlay */
-        .pattern-overlay {
-            background:
-                linear-gradient(135deg, rgba(26, 115, 232, 0.8) 0%, rgba(13, 71, 161, 0.9) 100%),
-                repeating-linear-gradient(45deg,
-                    rgba(255, 255, 255, 0.05) 0px,
-                    rgba(255, 255, 255, 0.05) 2px,
-                    transparent 2px,
-                    transparent 8px);
-            opacity: 1;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* Estilo para o header alternativo */
-        .header-decoration {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .status-badge {
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Melhorias de responsividade e design */
-        @media (max-width: 768px) {
-            .container-fluid {
-                padding: 0;
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
             }
-
-            .col-lg-7,
-            .col-lg-5 {
-                padding: 1.5rem !important;
-            }
-
-            .feature-card {
-                margin-bottom: 1rem;
-            }
-
-            .login-section {
-                border-left: none !important;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(30px);
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 
-        /* Melhorias visuais */
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out;
         }
 
-        .hover-lift:hover {
-            transform: translateY(-2px);
-        }
-
-        .dev-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            color: white;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .dev-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        /* Melhorias para mobile */
-        @media (max-width: 768px) {
-            .container-fluid {
-                padding: 0;
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
             }
-
-            .col-lg-5 {
-                padding: 1rem !important;
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
-
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 1rem !important;
-                margin-top: 1.5rem;
-            }
-
-            .feature-card {
-                padding: 1rem !important;
-            }
-
-            .feature-card .feature-icon {
-                width: 40px;
-                height: 40px;
-            }
-
-            .feature-card h3 {
-                font-size: 0.9rem !important;
-            }
-
-            .feature-card p {
-                font-size: 0.8rem !important;
-                margin-top: 0.5rem;
-            }
-
-            /* Ajuste do header do GitHub para não sobrepor */
-            .creative-header {
-                top: auto;
-                bottom: 1rem;
-                right: 1rem;
-                background: rgba(0, 0, 0, 0.2);
-                backdrop-filter: blur(10px);
-            }
-
-            /* Ajuste do título e badge Beta */
-            .title-wrapper {
-                display: flex;
-                align-items: flex-start;
-                gap: 0.5rem;
-                flex-wrap: wrap;
-            }
-
-            .title-wrapper .badge {
-                margin-top: 0.5rem;
-            }
-
-            /* Layout mais compacto */
-            .mb-4 {
-                margin-bottom: 1rem !important;
-            }
-
-            .mb-3 {
-                margin-bottom: 0.75rem !important;
-            }
-        }
-
-        /* Melhorias para mobile - coluna de login */
-        @media (max-width: 768px) {
-            .login-section {
-                padding: 1.5rem !important;
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: rgba(255, 255, 255, 0.1);
-            }
-
-            .login-card {
-                margin: 0;
-                width: 100%;
-            }
-
-            .login-card .card-body {
-                padding: 2rem !important;
-            }
-
-            .login-card .p-5 {
-                padding: 1.5rem !important;
-            }
-
-            /* Ajusta o espaçamento do logo */
-            .login-card .bg-primary {
-                padding: 1.5rem !important;
-                margin-bottom: 1.5rem !important;
-            }
-
-            /* Melhora a legibilidade dos textos */
-            .login-card .text-muted {
-                opacity: 0.8;
-                font-size: 0.9rem;
-            }
-
-            /* Ajusta o botão de login */
-            .login-card .btn-lg {
-                padding: 0.8rem 1rem;
-                font-size: 1rem;
-            }
-
-            /* Ajusta o alerta de informação */
-            .login-card .alert {
-                padding: 1rem;
-                font-size: 0.85rem;
-                margin: 1rem 0;
-            }
-
-            /* Melhora o espaçamento geral */
-            .login-card .gap-3 {
-                gap: 1rem !important;
-            }
-
-            /* Ajusta margens e paddings */
-            .mb-4 {
-                margin-bottom: 1.5rem !important;
-            }
-
-            .my-4 {
-                margin: 1.5rem 0 !important;
-            }
-        }
-
-        /* Transição suave entre layouts */
-        .login-section {
-            transition: all 0.3s ease;
-        }
-
-        .login-card {
-            transition: all 0.3s ease;
         }
     </style>
 </head>
 
-<body class="bg-gradient-primary">
-    <!-- Header Criativo -->
-    <a href="https://github.com/kellyson71/IF-calc" target="_blank" class="creative-header">
-        <div class="stats-pill">
-            <i class="fas fa-code-branch"></i>
-            <span>v1.0</span>
-        </div>
-        <div class="stats-pill">
-            <i class="fas fa-star"></i>
-            <span>Beta</span>
-        </div>
-        <i class="fab fa-github fs-5"></i>
-    </a>
+<body>
+    <!-- Grid Background -->
+    <div class="grid-background">
+        <div class="grid-overlay"></div>
 
-    <!-- Conteúdo Principal -->
-    <div class="min-vh-100 d-flex align-items-stretch">
-        <!-- Pattern overlay com opacidade ajustada -->
-        <div class="pattern-overlay"
-            style="background: linear-gradient(135deg, rgba(26,115,232,0.97) 0%, rgba(13,71,161,0.97) 100%), 
-                    url('assets/pattern.png');
-                    background-size: cover;">
-        </div>
+        <!-- Header Flutuante -->
+        <a href="https://github.com/kellyson71/IF-calc" target="_blank" class="floating-header">
+            <div class="version-badge">
+                <i class="fas fa-code-branch"></i>
+                <span>v1.0</span>
+            </div>
+            <div class="beta-badge">
+                <i class="fas fa-star"></i>
+                <span>Beta</span>
+            </div>
+            <i class="fab fa-github"></i>
+        </a>
 
-        <div class="container-fluid p-0">
-            <div class="row g-0 min-vh-100">
-                <!-- Coluna de apresentação -->
-                <div class="col-lg-7 p-5 d-flex flex-column">
-                    <div class="mb-4 animate__animated animate__fadeInUp">
-                        <div class="d-flex flex-column gap-3">
-                            <div>
-                                <div class="title-wrapper">
-                                    <h1 class="display-4 fw-bold m-0 text-white text-shadow">SUPACO</h1>
-                                    <span class="badge bg-white text-primary fs-6">Beta</span>
-                                </div>
-                                <p class="h5 text-white-50 mb-3">Sistema Útil Pra Aluno Cansado e Ocupado</p>
-                                <a href="https://github.com/Kellyson71"
-                                    target="_blank"
-                                    class="dev-link hover-lift">
-                                    <i class="fab fa-github"></i>
-                                    <span>Desenvolvido por Kellyson</span>
-                                </a>
-                            </div>
-                        </div>
+        <!-- Container Principal -->
+        <div class="login-container">
+            <div class="login-content">
+                <!-- Seção de Apresentação -->
+                <div class="presentation-section slide-in-left">
+                    <div class="brand-header">
+                        <h1 class="brand-title">SUPACO</h1>
+                        <p class="brand-subtitle">Sistema Útil Pra Aluno Cansado e Ocupado</p>
+                        <a href="https://github.com/Kellyson71" target="_blank" class="dev-link">
+                            <i class="fab fa-github"></i>
+                            <span>Desenvolvido por Kellyson</span>
+                        </a>
                     </div>
 
-                    <!-- Features em grid responsivo -->
-                    <div class="features-grid flex-grow-1">
-                        <?php
-                        $features = [
-                            [
-                                'icon' => 'check-circle',
-                                'title' => 'Controle de Frequência',
-                                'desc' => 'Monitore suas faltas e saiba quando pode faltar sem preocupações'
-                            ],
-                            [
-                                'icon' => 'calculator',
-                                'title' => 'Calculadora de Notas',
-                                'desc' => 'Simule suas notas e descubra quanto precisa para passar'
-                            ],
-                            [
-                                'icon' => 'calendar',
-                                'title' => 'Horários Inteligentes',
-                                'desc' => 'Visualize suas aulas de forma organizada e prática'
-                            ],
-                            [
-                                'icon' => 'sync',
-                                'title' => 'Sincronização SUAP',
-                                'desc' => 'Seus dados sempre atualizados com o sistema do IFRN'
-                            ]
-                        ];
-                        foreach ($features as $index => $feature): ?>
-                            <div class="animate__animated animate__fadeInUp"
-                                style="animation-delay: <?php echo $index * 0.1; ?>s">
-                                <div class="feature-card h-100 rounded-4 p-4 hover-lift">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="feature-icon me-3">
-                                            <i class="fas fa-<?php echo $feature['icon']; ?> fa-lg text-white"></i>
-                                        </div>
-                                        <h3 class="h5 mb-0 text-white"><?php echo $feature['title']; ?></h3>
-                                    </div>
-                                    <p class="mb-0 text-white-50"><?php echo $feature['desc']; ?></p>
-                                </div>
+                    <div class="features-grid">
+                        <div class="feature-card fade-in" style="animation-delay: 0.1s;">
+                            <div class="feature-icon">
+                                <i class="fas fa-check-circle fa-lg"></i>
                             </div>
-                        <?php endforeach; ?>
+                            <h3 class="feature-title">Controle de Frequência</h3>
+                            <p class="feature-description">Monitore suas faltas e saiba quando pode faltar sem preocupações</p>
+                        </div>
+
+                        <div class="feature-card fade-in" style="animation-delay: 0.2s;">
+                            <div class="feature-icon">
+                                <i class="fas fa-calculator fa-lg"></i>
+                            </div>
+                            <h3 class="feature-title">Calculadora de Notas</h3>
+                            <p class="feature-description">Simule suas notas e descubra quanto precisa para passar</p>
+                        </div>
+
+                        <div class="feature-card fade-in" style="animation-delay: 0.3s;">
+                            <div class="feature-icon">
+                                <i class="fas fa-calendar fa-lg"></i>
+                            </div>
+                            <h3 class="feature-title">Horários Inteligentes</h3>
+                            <p class="feature-description">Visualize suas aulas de forma organizada e prática</p>
+                        </div>
+
+                        <div class="feature-card fade-in" style="animation-delay: 0.4s;">
+                            <div class="feature-icon">
+                                <i class="fas fa-sync fa-lg"></i>
+                            </div>
+                            <h3 class="feature-title">Sincronização SUAP</h3>
+                            <p class="feature-description">Seus dados sempre atualizados com o sistema do IFRN</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Coluna de login -->
-                <div class="col-lg-5 login-section p-5 d-flex align-items-center">
-                    <div class="w-100 max-width-500 mx-auto">
-                        <div class="login-card rounded-4 p-5">
-                            <div class="card-body p-5">
-                                <div class="text-center mb-4">
-                                    <div class="bg-primary bg-opacity-10 rounded-4 p-3 d-inline-block mb-3">
-                                        <img src="assets/logo.png" alt="SUPACO Logo"
-                                            class="rounded-3" style="width: 80px; height: 80px;">
-                                    </div>
-                                    <h2 class="h3 text-primary mb-2">Bem-vindo ao SUPACO</h2>
-                                    <p class="text-muted">Faça login com suas credenciais do SUAP</p>
-                                </div>
+                <!-- Seção de Login -->
+                <div class="login-section slide-in-right">
+                    <div class="login-header">
+                        <img src="assets/logo.png" alt="SUPACO Logo" class="login-logo">
+                        <h2 class="login-title">Bem-vindo ao SUPACO</h2>
+                        <p class="login-subtitle">Faça login com suas credenciais do SUAP</p>
+                    </div>
 
-                                <div class="d-grid gap-3">
-                                    <a href="<?php echo $auth_url; ?>"
-                                        class="btn btn-primary btn-lg py-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-sign-in-alt me-2"></i>
-                                        Entrar com SUAP </a> <?php if (isset($_GET['erro'])): ?>
-                                        <div class="alert alert-danger border-0 rounded-3 shadow-sm">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-exclamation-triangle fa-lg me-3 text-danger"></i>
-                                                <p class="mb-0 small">
-                                                    <?php
-                                                                    $mensagem = "Ocorreu um erro durante a autenticação.";
+                    <a href="<?php echo $auth_url; ?>" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Entrar com SUAP</span>
+                    </a>
 
-                                                                    if ($_GET['erro'] === 'sessao_expirada') {
-                                                                        $mensagem = "A sua sessão expirou. Por favor, faça login novamente.";
-                                                                    } elseif ($_GET['erro'] === 'usuario_nao_encontrado') {
-                                                                        $mensagem = "Não foi possível obter seus dados do SUAP. Por favor, tente novamente.";
-                                                                    } elseif ($_GET['erro'] === 'token_invalido') {
-                                                                        $mensagem = "Token de acesso inválido. Por favor, faça login novamente.";
-                                                                    }
+                    <?php if (isset($_GET['erro'])): ?>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle alert-icon"></i>
+                            <span>
+                                <?php
+                                $mensagem = "Ocorreu um erro durante a autenticação.";
 
-                                                                    echo $mensagem;
-                                                    ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    <?php else: ?> <div class="alert alert-info border-0 rounded-3 shadow-sm">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-info-circle fa-lg me-3 text-primary"></i>
-                                                <p class="mb-0 small">
-                                                    Suas credenciais são gerenciadas diretamente pelo SUAP.
-                                                    O login é seguro e criptografado.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
+                                if ($_GET['erro'] === 'sessao_expirada') {
+                                    $mensagem = "A sua sessão expirou. Por favor, faça login novamente.";
+                                } elseif ($_GET['erro'] === 'usuario_nao_encontrado') {
+                                    $mensagem = "Não foi possível obter seus dados do SUAP. Por favor, tente novamente.";
+                                } elseif ($_GET['erro'] === 'token_invalido') {
+                                    $mensagem = "Token de acesso inválido. Por favor, faça login novamente.";
+                                }
 
-                                    <hr class="my-4">
-                                    <div class="text-center text-muted">
-                                        <small>
-                                            Desenvolvido com <i class="fas fa-heart text-danger"></i> por estudantes do IFRN
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
+                                echo $mensagem;
+                                ?>
+                            </span>
                         </div>
+                    <?php else: ?>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle alert-icon"></i>
+                            <span>Suas credenciais são gerenciadas diretamente pelo SUAP. O login é seguro e criptografado.</span>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="login-footer">
+                        <p class="footer-text">
+                            Desenvolvido com <i class="fas fa-heart heart-icon"></i> por estudantes do IFRN
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

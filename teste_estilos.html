@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Estilos</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- Dark Theme CSS -->
+    <link href="assets/dark-theme.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Grid Background -->
+    <div class="grid-background">
+        <div class="grid-overlay"></div>
+
+        <!-- Main Container -->
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            <h1 class="main-title">Teste de Estilos</h1>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-book stat-icon text-blue-400"></i>
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Disciplinas</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon-custom bg-purple-500">M</div>
+                        <div class="stat-value">75.5</div>
+                        <div class="stat-label">Média</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-user stat-icon text-emerald-400"></i>
+                        <div class="stat-value">85.2%</div>
+                        <div class="stat-label">Frequência</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon-custom bg-green-500">✓</div>
+                        <div class="stat-value">Bom</div>
+                        <div class="stat-label">Status</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="footer-info">
+                <div class="period-badge">
+                    2025.1
+                </div>
+                <div class="last-update">
+                    <i class="fas fa-clock"></i>
+                    <span>Atualizado às 04:30</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Próximas Aulas -->
+        <div class="aulas-section">
+            <h2 class="section-title">
+                <i class="fas fa-clock"></i>
+                <span>Próximas Aulas - Segunda-feira</span>
+            </h2>
+
+            <div class="aula-card">
+                <div class="aula-header">
+                    <div class="aula-info">
+                        <h3>Língua Inglesa</h3>
+                        <div class="aula-details">
+                            <div class="aula-detail">
+                                <i class="fas fa-clock"></i>
+                                <span>13:00 - 13:45</span>
+                            </div>
+                            <div class="aula-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Chave 045 - Sala de Aula 06 (Piso 02) - Bloco 02 - Principal (PF)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-badge can-skip">
+                        <i class="fas fa-check"></i>
+                        <span>Pode faltar</span>
+                    </div>
+                </div>
+
+                <div class="attendance-info">
+                    <div class="attendance-details">
+                        <span class="text-muted">
+                            <i class="fas fa-user-times"></i>
+                            <span>Faltas: <strong>14</strong> de <strong>20</strong></span>
+                        </span>
+                        <span class="status-badge can-skip">
+                            <strong>6</strong> restantes
+                        </span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar-custom success" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="aula-card">
+                <div class="aula-header">
+                    <div class="aula-info">
+                        <h3>Matemática Discreta</h3>
+                        <div class="aula-details">
+                            <div class="aula-detail">
+                                <i class="fas fa-clock"></i>
+                                <span>14:50 - 15:35</span>
+                            </div>
+                            <div class="aula-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Chave 045 - Sala de Aula 06 (Piso 02) - Bloco 02 - Principal (PF)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-badge can-skip">
+                        <i class="fas fa-check"></i>
+                        <span>Pode faltar</span>
+                    </div>
+                </div>
+
+                <div class="attendance-info">
+                    <div class="attendance-details">
+                        <span class="text-muted">
+                            <i class="fas fa-user-times"></i>
+                            <span>Faltas: <strong>8</strong> de <strong>20</strong></span>
+                        </span>
+                        <span class="status-badge can-skip">
+                            <strong>12</strong> restantes
+                        </span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar-custom success" style="width: 40%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção do Boletim -->
+        <div class="aulas-section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                <span>Boletim e Simulador de Notas</span>
+                <small class="text-muted">Sistema IF: MD = (2×N1 + 3×N2) ÷ 5</small>
+            </h2>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Disciplina</th>
+                            <th class="text-center">N1</th>
+                            <th class="text-center">N2</th>
+                            <th class="text-center">Média</th>
+                            <th class="text-center">Necessário</th>
+                            <th class="text-center">Freq. (%)</th>
+                            <th class="text-center">Situação</th>
+                            <th class="text-center">Simular</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div>
+                                    <small class="text-muted">MAT001</small>
+                                    <div class="fw-bold">Matemática Discreta</div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold">75.0</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold">80.0</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">78.0</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success">✓ Aprovado</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">85.2%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">APROVADO</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-calculator"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

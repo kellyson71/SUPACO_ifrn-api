@@ -17,7 +17,9 @@ function parseHorario($horarioStr) {
     
     foreach ($horarios as $horario) {
         $horario = trim($horario);
-        if (empty($horario)) continue;
+        if (empty($horario)) {
+            continue;
+        }
 
         // Padrão principal: 2V12 (dia, turno, aulas)
         if (preg_match('/^(\d)([MTV])(\d+)$/', $horario, $matches)) {
@@ -217,130 +219,279 @@ function removeAcentos($string) {
     return strtolower(preg_replace(array("/(á|à|ã|â|ä)/","/(é|è|ê|ë)/","/(í|ì|î|ï)/","/(ó|ò|õ|ô|ö)/","/(ú|ù|û|ü)/","/(ñ)/","/(ç)/"),
                                   array("a","e","i","o","u","n","c"), $string));
 }
+
+function criarTabelaHorariosCompleta($horarios = null) {
+    $dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+    
+    // Definição dos horários de aulas para Manhã e Tarde
+    $aulasManha = [
+        ['hora' => '07:00 - 07:45', 'codigo' => '1', 'turno' => 'M'],
+        ['hora' => '07:45 - 08:30', 'codigo' => '2', 'turno' => 'M'],
+        ['hora' => '08:50 - 09:35', 'codigo' => '3', 'turno' => 'M'],
+        ['hora' => '09:35 - 10:20', 'codigo' => '4', 'turno' => 'M'],
+        ['hora' => '10:30 - 11:15', 'codigo' => '5', 'turno' => 'M'],
+        ['hora' => '11:15 - 12:00', 'codigo' => '6', 'turno' => 'M']
+    ];
+
+    $aulasTarde = [
+        ['hora' => '13:00 - 13:45', 'codigo' => '1', 'turno' => 'V'],
+        ['hora' => '13:45 - 14:30', 'codigo' => '2', 'turno' => 'V'],
+        ['hora' => '14:50 - 15:35', 'codigo' => '3', 'turno' => 'V'],
+        ['hora' => '15:35 - 16:20', 'codigo' => '4', 'turno' => 'V'],
+        ['hora' => '16:30 - 17:15', 'codigo' => '5', 'turno' => 'V'],
+        ['hora' => '17:15 - 18:00', 'codigo' => '6', 'turno' => 'V']
+    ];
+
+    echo '<div class="horarios-completos">';
+    echo '<h3 class="titulo-horarios"><i class="fas fa-calendar-alt"></i> Grade de Horários Completa</h3>';
+    
+    // Tabela da Manhã
+    echo '<div class="turno-horarios">';
+    echo '<h4 class="titulo-turno"><i class="fas fa-sun"></i> Manhã</h4>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-bordered table-horario-completo">';
+    echo '<thead><tr>';
+    echo '<th class="hora-col" width="15%">Horário</th>';
+    foreach ($dias as $dia) {
+        echo '<th width="17%" class="text-center">' . $dia . '</th>';
+    }
+    echo '</tr></thead><tbody>';
+    
+    foreach ($aulasManha as $aula) {
+        echo '<tr>';
+        echo '<td class="text-center hora-celula"><strong>' . $aula['hora'] . '</strong></td>';
+        
+        for ($dia = 2; $dia <= 6; $dia++) {
+            echo '<td class="celula-aula">';
+            echo '<div class="celula-conteudo">';
+            
+            // Procurar disciplina para este horário e dia
+            $disciplinaEncontrada = false;
+            if ($horarios && is_array($horarios)) {
+                foreach ($horarios as $disciplina) {
+                    if (!empty($disciplina['horarios_de_aula'])) {
+                        $horariosArray = parseHorario($disciplina['horarios_de_aula']);
+                        foreach ($horariosArray as $h) {
+                            if ($h['dia'] == $dia && $h['turno'] == $aula['turno'] && in_array($aula['codigo'], $h['aulas'])) {
+                                echo '<div class="disciplina-celula">';
+                                echo '<span class="disciplina-sigla">' . htmlspecialchars($disciplina['sigla']) . '</span>';
+                                echo '<span class="disciplina-nome-celula">' . htmlspecialchars($disciplina['descricao']) . '</span>';
+                                if (!empty($disciplina['locais_de_aula'][0])) {
+                                    echo '<small class="disciplina-local">' . htmlspecialchars($disciplina['locais_de_aula'][0]) . '</small>';
+                                }
+                                echo '</div>';
+                                $disciplinaEncontrada = true;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (!$disciplinaEncontrada) {
+                echo '<span class="text-muted">Livre</span>';
+            }
+            
+            echo '</div>';
+            echo '</td>';
+        }
+        echo '</tr>';
+    }
+    
+    echo '</tbody></table>';
+    echo '</div>';
+    echo '</div>';
+    
+    // Tabela da Tarde
+    echo '<div class="turno-horarios">';
+    echo '<h4 class="titulo-turno"><i class="fas fa-sun"></i> Tarde</h4>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-bordered table-horario-completo">';
+    echo '<thead><tr>';
+    echo '<th class="hora-col" width="15%">Horário</th>';
+    foreach ($dias as $dia) {
+        echo '<th width="17%" class="text-center">' . $dia . '</th>';
+    }
+    echo '</tr></thead><tbody>';
+    
+    foreach ($aulasTarde as $aula) {
+        echo '<tr>';
+        echo '<td class="text-center hora-celula"><strong>' . $aula['hora'] . '</strong></td>';
+        
+        for ($dia = 2; $dia <= 6; $dia++) {
+            echo '<td class="celula-aula">';
+            echo '<div class="celula-conteudo">';
+            
+            // Procurar disciplina para este horário e dia
+            $disciplinaEncontrada = false;
+            if ($horarios && is_array($horarios)) {
+                foreach ($horarios as $disciplina) {
+                    if (!empty($disciplina['horarios_de_aula'])) {
+                        $horariosArray = parseHorario($disciplina['horarios_de_aula']);
+                        foreach ($horariosArray as $h) {
+                            if ($h['dia'] == $dia && $h['turno'] == $aula['turno'] && in_array($aula['codigo'], $h['aulas'])) {
+                                echo '<div class="disciplina-celula">';
+                                echo '<span class="disciplina-sigla">' . htmlspecialchars($disciplina['sigla']) . '</span>';
+                                echo '<span class="disciplina-nome-celula">' . htmlspecialchars($disciplina['descricao']) . '</span>';
+                                if (!empty($disciplina['locais_de_aula'][0])) {
+                                    echo '<small class="disciplina-local">' . htmlspecialchars($disciplina['locais_de_aula'][0]) . '</small>';
+                                }
+                                echo '</div>';
+                                $disciplinaEncontrada = true;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (!$disciplinaEncontrada) {
+                echo '<span class="text-muted">Livre</span>';
+            }
+            
+            echo '</div>';
+            echo '</td>';
+        }
+        echo '</tr>';
+    }
+    
+    echo '</tbody></table>';
+    echo '</div>';
+    echo '</div>';
+    
+    echo '</div>';
+}
+
+function criarCardsHorariosSemana($horarios, $boletim = null) {
+    
+    $dias = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira'];
+    $diasSuap = [2, 3, 4, 5, 6]; // Correspondência SUAP
+    
+    echo '<div class="horarios-semana">';
+    echo '<h3 class="titulo-horarios-semana"><i class="fas fa-calendar-week"></i> Horários da Semana</h3>';
+    
+    echo '<div class="cards-dias-container">';
+    
+    $diasComAulas = 0;
+    
+    // Iterando pelos dias da semana
+    foreach ($dias as $index => $dia) {
+        $diaSuap = $diasSuap[$index];
+        
+        // Usar getAulasDoDia para buscar aulas de cada dia
+        $aulasDoDia = getAulasDoDia($horarios, $diaSuap);
+        
+        if (!empty($aulasDoDia)) {
+            $diasComAulas++;
+            
+            // Ordena as aulas por horário
+            $aulasOrdenadas = ordenarAulasPorHorario($aulasDoDia);
+            
+            // Agrupa aulas consecutivas da mesma disciplina
+            $aulasAgrupadas = agruparAulasConsecutivas($aulasOrdenadas);
+            
+            echo '<div class="card-dia">';
+            echo '<div class="card-dia-header">';
+            echo '<h4 class="dia-titulo">' . $dia . '</h4>';
+            echo '<span class="aulas-count">' . count($aulasOrdenadas) . ' aula(s)</span>';
+            echo '</div>';
+            
+            echo '<div class="aulas-dia">';
+            foreach ($aulasAgrupadas as $grupo) {
+                $aula = $grupo[0]; // Primeira aula do grupo
+                $quantidadeAulas = count($grupo);
+                
+                // Encontra a disciplina correspondente no boletim para status
+                $disciplinaBoletim = null;
+                $podeFaltar = 'success';
+                
+                if ($boletim && is_array($boletim)) {
+                    foreach ($boletim as $item) {
+                        if (isset($aula['sigla']) && strpos($item['disciplina'], $aula['sigla']) !== false) {
+                            $disciplinaBoletim = $item;
+                            $podeFaltar = podeFaltarAmanha($item);
+                            break;
+                        }
+                    }
+                }
+                
+                // Determina status visual
+                $statusClass = '';
+                switch ($podeFaltar) {
+                    case 'success':
+                        $statusClass = 'can-skip';
+                        break;
+                    case 'warning':
+                        $statusClass = 'be-careful';
+                        break;
+                    default:
+                        $statusClass = 'avoid-skip';
+                        break;
+                }
+                
+                echo '<div class="aula-card-resumida ' . $statusClass . '">';
+                echo '<div class="aula-info-resumida">';
+                
+                // Título da disciplina
+                echo '<div class="aula-disciplina">';
+                echo htmlspecialchars($aula['descricao'] ?? $aula['disciplina'] ?? 'Aula');
+                if ($quantidadeAulas > 1) {
+                    echo ' <span class="aula-count-badge">' . $quantidadeAulas . ' aulas</span>';
+                }
+                echo '</div>';
+                
+                // Horário
+                if ($quantidadeAulas > 1) {
+                    // Combina os horários de todas as aulas do grupo
+                    $horariosGrupo = array();
+                    foreach ($grupo as $aulaGrupo) {
+                        if (isset($aulaGrupo['horario_detalhado'])) {
+                            $horariosGrupo[] = $aulaGrupo['horario_detalhado'];
+                        }
+                    }
+                    $horarioCombinado = implode(' + ', $horariosGrupo);
+                    echo '<div class="aula-horario">' . $horarioCombinado . '</div>';
+                } else {
+                    if (isset($aula['horario_detalhado'])) {
+                        echo '<div class="aula-horario">' . $aula['horario_detalhado'] . '</div>';
+                    }
+                }
+                
+                // Local
+                if (isset($aula['locais']) && is_array($aula['locais']) && !empty($aula['locais'])) {
+                    echo '<div class="aula-local"><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars(implode(', ', $aula['locais'])) . '</div>';
+                } else if (isset($aula['local']) && !empty($aula['local'])) {
+                    echo '<div class="aula-local"><i class="fas fa-map-marker-alt"></i> ' . htmlspecialchars($aula['local']) . '</div>';
+                }
+                
+                // Status de frequência (se disponível)
+                if ($disciplinaBoletim && isset($disciplinaBoletim['percentual_carga_horaria_frequentada'])) {
+                    $frequencia = $disciplinaBoletim['percentual_carga_horaria_frequentada'];
+                    echo '<div class="aula-frequencia">';
+                    echo '<i class="fas fa-user-check"></i> ';
+                    echo '<span>' . number_format($frequencia, 1) . '%</span>';
+                    echo '</div>';
+                }
+                
+                echo '</div>';
+                echo '</div>';
+            }
+            echo '</div>';
+            
+            echo '</div>';
+        }
+    }
+    
+    // Se nenhum dia tem aulas, mostrar mensagem
+    if ($diasComAulas === 0) {
+        echo '<div class="empty-horarios">';
+        echo '<i class="fas fa-calendar-times"></i>';
+        echo '<h4>Nenhum horário encontrado</h4>';
+        echo '<p>Não há aulas programadas para esta semana.</p>';
+        echo '</div>';
+    }
+    
+    echo '</div>';
+    echo '</div>';
+}
 ?>
-
-<style>
-.table-horario {
-    font-size: 0.9em;
-}
-.disciplina-info {
-    padding: 5px;
-    margin: 2px;
-    border-radius: 4px;
-    background-color: #f8f9fa;
-    font-size: 0.85em;
-}
-.disciplina-info small {
-    display: block;
-    color: #6c757d;
-}
-
-/* Novos estilos para mobile */
-.horario-mobile .nav-pills {
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: rgba(255,255,255,0.5);
-    border-radius: 10px;
-}
-
-.horario-mobile .nav-link {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--primary-color);
-}
-
-.horario-mobile .nav-link.active {
-    background: var(--primary-color);
-}
-
-.horario-item {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-
-.horario-header {
-    padding: 0.5rem;
-    background: rgba(0,0,0,0.02);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.card-aula {
-    margin: 0.5rem;
-    border: none;
-    background: rgba(26, 115, 232, 0.03);
-    border-left: 3px solid var(--primary-color);
-}
-
-.card-aula:hover {
-    background: rgba(26, 115, 232, 0.05);
-}
-
-/* Ajustes responsivos */
-@media (max-width: 768px) {
-    .table-horario {
-        font-size: 0.8em;
-    }
-
-    .table-horario th {
-        padding: 0.5rem !important;
-    }
-
-    .table-horario td {
-        padding: 0.5rem !important;
-    }
-
-    .disciplina-info {
-        padding: 0.5rem;
-        margin: 0.25rem 0;
-    }
-
-    .disciplina-info strong {
-        font-size: 0.9em;
-    }
-
-    .disciplina-info small {
-        font-size: 0.75em;
-        line-height: 1.2;
-    }
-
-    /* Esconde descrição longa em mobile */
-    .disciplina-info .descricao-completa {
-        display: none;
-    }
-
-    /* Mostra apenas sigla em mobile */
-    .disciplina-info .sigla-mobile {
-        display: block;
-    }
-
-    /* Ajustes para horários */
-    .hora-col {
-        width: 80px !important;
-        white-space: nowrap;
-        font-size: 0.75em;
-    }
-    
-    .horario-mobile {
-        margin: -0.5rem;
-    }
-    
-    .horario-item {
-        margin-bottom: 0.75rem;
-    }
-    
-    .card-aula .card-body {
-        padding: 0.75rem;
-    }
-    
-    .card-aula h6 {
-        font-size: 0.95rem;
-    }
-    
-    .card-aula small {
-        font-size: 0.8rem;
-    }
-}
-</style>

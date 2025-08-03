@@ -1,0 +1,421 @@
+/* Estilos específicos para a seção de próximas aulas */
+
+/* Container da seção de aulas */
+.aulas-section {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--text-white);
+  background: rgba(39, 39, 42, 0.3);
+  border-radius: 1rem;
+  margin-top: 2rem;
+  border: 1px solid var(--border-zinc-800);
+  backdrop-filter: blur(10px);
+}
+
+/* Título da seção */
+.section-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  justify-content: center;
+  border-bottom: 2px solid var(--border-zinc-700);
+  padding-bottom: 1rem;
+}
+
+.section-title i {
+  color: var(--blue-400);
+  font-size: 1.5rem;
+}
+
+.section-title small {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-zinc-400);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Cards de aula melhorados */
+.aula-card {
+  background: linear-gradient(135deg, rgba(39, 39, 42, 0.8) 0%, rgba(63, 63, 70, 0.6) 100%);
+  border: 1px solid var(--border-zinc-700);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.aula-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue-400), var(--blue-500));
+}
+
+.aula-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-color: var(--border-zinc-600);
+}
+
+/* Header do card de aula */
+.aula-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.aula-info {
+  flex: 1;
+}
+
+.aula-info h3 {
+  color: var(--text-white);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.aula-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.aula-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-zinc-300);
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(63, 63, 70, 0.3);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-zinc-700);
+}
+
+.aula-detail i {
+  color: var(--blue-400);
+  width: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Status badges melhorados */
+.status-badge {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+  justify-content: center;
+  border: 2px solid transparent;
+}
+
+.status-badge.can-skip {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.be-careful {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.avoid-skip {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-badge i {
+  font-size: 1rem;
+}
+
+/* Informações de frequência */
+.attendance-info {
+  background: rgba(39, 39, 42, 0.5);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border-zinc-700);
+}
+
+.attendance-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.text-muted {
+  color: var(--text-zinc-400) !important;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-muted i {
+  color: var(--text-zinc-500);
+}
+
+.text-muted strong {
+  color: var(--text-white);
+}
+
+/* Barra de progresso customizada */
+.progress-container {
+  width: 100%;
+  height: 8px;
+  background: rgba(63, 63, 70, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-custom {
+  height: 100%;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.progress-bar-custom::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.progress-bar-custom.success {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.progress-bar-custom.warning {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.progress-bar-custom.danger {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Estados vazios */
+.empty-aulas {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-zinc-400);
+}
+
+.empty-aulas i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--text-zinc-500);
+}
+
+.empty-aulas h4 {
+  color: var(--text-white);
+  margin-bottom: 0.5rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .aulas-section {
+    padding: 1.5rem 1rem 2rem;
+    margin-top: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .aula-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .aula-details {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .aula-detail {
+    justify-content: flex-start;
+  }
+  
+  .status-badge {
+    align-self: flex-start;
+    min-width: auto;
+    width: fit-content;
+  }
+  
+  .attendance-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* Animações */
+.aula-card {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects */
+.aula-card:hover .aula-info h3 {
+  color: var(--blue-400);
+  transition: color 0.3s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Loading state */
+.aulas-loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-zinc-400);
+}
+
+.aulas-loading i {
+  animation: spin 1s linear infinite;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Cards compactos para próximas aulas */
+.aula-card.compact {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.aula-card.compact .aula-header {
+  margin-bottom: 0.75rem;
+}
+
+.aula-card.compact .aula-info h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.aula-card.compact .aula-details {
+  gap: 0.5rem;
+}
+
+.aula-card.compact .aula-detail {
+  font-size: 0.875rem;
+  padding: 0.25rem 0;
+}
+
+.aula-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.aula-count {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+  color: var(--blue-400);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.attendance-info.compact {
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.attendance-info.compact .attendance-details {
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.attendance-info.compact .text-muted {
+  font-size: 0.75rem;
+}
+
+.attendance-info.compact .status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Responsividade para cards compactos */
+@media (max-width: 768px) {
+  .aula-card.compact {
+    padding: 0.75rem;
+  }
+  
+  .aula-card.compact .aula-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .aula-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .aula-count {
+    align-self: flex-start;
+  }
+} 

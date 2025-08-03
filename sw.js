@@ -57,6 +57,19 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Ignora requisições para chrome-extension e outras schemes não suportadas
+  if (
+    !url.protocol.startsWith("http") ||
+    url.protocol === "chrome-extension:"
+  ) {
+    return;
+  }
+
+  // Ignora requisições para outros domínios (exceto API do SUAP)
+  if (url.hostname !== location.hostname && !url.hostname.includes("suap.")) {
+    return;
+  }
+
   // Diferentes estratégias baseadas no tipo de recurso
   if (
     url.pathname.includes("/api_offline.php") ||
@@ -84,9 +97,12 @@ self.addEventListener("fetch", (event) => {
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (networkResponse.ok && networkResponse.status < 400) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+      // Só clona se a response não foi usada
+      if (!networkResponse.bodyUsed) {
+        await cache.put(request, networkResponse.clone());
+      }
       return networkResponse;
     }
   } catch (error) {
@@ -109,21 +125,25 @@ async function networkFirstStrategy(request) {
 
 // Cache First - para assets estáticos
 async function cacheFirstStrategy(request) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-
   try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (networkResponse.ok && networkResponse.status < 400) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+      // Só clona se a response não foi usada
+      if (!networkResponse.bodyUsed) {
+        await cache.put(request, networkResponse.clone());
+      }
     }
     return networkResponse;
   } catch (error) {
     console.log("SUPACO PWA: Recurso não disponível:", request.url);
-    throw error;
+    // Retorna resposta offline se disponível
+    return caches.match("/SUAP/offline.html");
   }
 }
 
@@ -134,9 +154,10 @@ async function staleWhileRevalidateStrategy(request) {
   // Busca nova versão em background
   const fetchPromise = fetch(request)
     .then((response) => {
-      if (response.ok) {
-        const cache = caches.open(CACHE_NAME);
-        cache.then((c) => c.put(request, response.clone()));
+      if (response.ok && response.status < 400 && !response.bodyUsed) {
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(request, response.clone());
+        });
       }
       return response;
     })

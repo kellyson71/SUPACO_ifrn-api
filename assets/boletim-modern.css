@@ -1,0 +1,590 @@
+/* Estilos modernos para o Boletim Acadêmico */
+
+/* Container principal do boletim */
+.boletim-section {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--text-white);
+  background: rgba(39, 39, 42, 0.3);
+  border-radius: 1rem;
+  margin-top: 2rem;
+  border: 1px solid var(--border-zinc-800);
+  backdrop-filter: blur(10px);
+}
+
+/* Header do boletim */
+.boletim-header {
+  background: linear-gradient(135deg, rgba(39, 39, 42, 0.9) 0%, rgba(63, 63, 70, 0.8) 100%);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-zinc-700);
+}
+
+.boletim-title {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.boletim-title i {
+  font-size: 2.5rem;
+  color: var(--blue-400);
+  background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.boletim-title h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.boletim-title p {
+  color: var(--text-zinc-300);
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Lista de informações do sistema */
+.boletim-info-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-zinc-700);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 0.5rem;
+  color: var(--text-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.info-item i {
+  color: var(--blue-400);
+  font-size: 0.875rem;
+}
+
+.info-item strong {
+  color: var(--blue-300);
+  font-weight: 600;
+}
+
+/* Estatísticas do header - Removido, substituído por lista de informações */
+
+/* Grid de disciplinas */
+.boletim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Cards de disciplina */
+.disciplina-card {
+  background: linear-gradient(135deg, rgba(39, 39, 42, 0.9) 0%, rgba(63, 63, 70, 0.7) 100%);
+  border: 1px solid var(--border-zinc-700);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.disciplina-card * {
+  background: transparent !important;
+}
+
+.disciplina-card h3 {
+  background: transparent !important;
+  color: var(--text-white) !important;
+  text-shadow: none;
+  -webkit-text-fill-color: var(--text-white) !important;
+}
+
+.disciplina-card .disciplina-nome {
+  background: transparent !important;
+  color: var(--text-white) !important;
+  text-shadow: none;
+  -webkit-text-fill-color: var(--text-white) !important;
+}
+
+/* Regra específica para títulos de disciplinas */
+.boletim-section .disciplina-card .disciplina-info .disciplina-nome,
+.boletim-section .disciplina-card h3.disciplina-nome {
+  background: transparent !important;
+  color: var(--text-white) !important;
+  text-shadow: none;
+  -webkit-text-fill-color: var(--text-white) !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.disciplina-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue-400), var(--blue-500));
+}
+
+.disciplina-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-color: var(--border-zinc-600);
+}
+
+/* Status dos cards */
+.disciplina-card.aprovado::before {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.disciplina-card.reprovado::before {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.disciplina-card.final::before {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.disciplina-card.cursando::before {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+/* Header do card */
+.disciplina-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  background: transparent;
+}
+
+.disciplina-info {
+  flex: 1;
+  background: transparent;
+}
+
+.disciplina-codigo {
+  font-size: 0.75rem;
+  color: var(--text-zinc-400);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.disciplina-nome {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-white) !important;
+  margin: 0;
+  line-height: 1.3;
+  background: transparent !important;
+  text-shadow: none;
+}
+
+.disciplina-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 2px solid transparent;
+}
+
+.disciplina-card.aprovado .disciplina-status {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.disciplina-card.reprovado .disciplina-status {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.disciplina-card.final .disciplina-status {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.disciplina-card.cursando .disciplina-status {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Container de notas */
+.notas-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.nota-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(39, 39, 42, 0.6);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-zinc-700);
+  transition: all 0.3s ease;
+}
+
+.nota-item:hover {
+  background: rgba(39, 39, 42, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nota-item.media {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(37, 99, 235, 0.15));
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.nota-label {
+  font-size: 0.75rem;
+  color: var(--text-zinc-400);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.nota-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.nota-numero {
+  color: var(--text-white);
+}
+
+.nota-numero.aprovado {
+  color: #10b981;
+}
+
+.nota-numero.reprovado {
+  color: #ef4444;
+}
+
+.nota-numero.final {
+  color: #f59e0b;
+}
+
+.nota-pendente {
+  color: var(--text-zinc-500);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Detalhes da disciplina */
+.disciplina-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(39, 39, 42, 0.7);
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-zinc-700);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-item i {
+  color: var(--blue-400);
+  width: 1rem;
+  font-size: 0.875rem;
+}
+
+.detail-item span {
+  color: var(--text-zinc-300);
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.detail-item strong {
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+/* Frequência */
+.detail-item.frequencia {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.freq-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(63, 63, 70, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.freq-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+/* Faltas */
+.detail-item.faltas {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.faltas-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.faltas-info span {
+  color: var(--text-zinc-300);
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.faltas-info strong {
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+.faltas-restantes {
+  color: var(--blue-400) !important;
+  font-weight: 600;
+}
+
+.faltas-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(63, 63, 70, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.faltas-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+/* Estados de alerta para faltas */
+.detail-item.faltas.critico .faltas-progress {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.detail-item.faltas.alerta .faltas-progress {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.detail-item.faltas.safe .faltas-progress {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+/* Ações */
+.disciplina-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-simular {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-simular:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+}
+
+.btn-simular i {
+  font-size: 1rem;
+}
+
+/* Animações */
+.disciplina-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects */
+.disciplina-card:hover .disciplina-nome {
+  color: var(--blue-400);
+  transition: color 0.3s ease;
+}
+
+.nota-item:hover .nota-numero {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .boletim-section {
+    padding: 1.5rem 1rem 2rem;
+    margin-top: 1.5rem;
+  }
+  
+  .boletim-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .boletim-title {
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .boletim-info-list {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  .info-item {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .boletim-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .disciplina-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .notas-container {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .faltas-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Estados especiais */
+.disciplina-card.aprovado:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.disciplina-card.reprovado:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.disciplina-card.final:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.disciplina-card.cursando:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Loading state */
+.boletim-loading {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-zinc-400);
+}
+
+.boletim-loading i {
+  animation: spin 1s linear infinite;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.boletim-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-zinc-400);
+}
+
+.boletim-empty i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--text-zinc-500);
+}
+
+.boletim-empty h4 {
+  color: var(--text-white);
+  margin-bottom: 0.5rem;
+} 

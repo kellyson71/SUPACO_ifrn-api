@@ -1,0 +1,537 @@
+.table-horario {
+    font-size: 0.9em;
+}
+.disciplina-info {
+    padding: 5px;
+    margin: 2px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    font-size: 0.85em;
+}
+.disciplina-info small {
+    display: block;
+    color: #6c757d;
+}
+
+/* Novos estilos para mobile */
+.horario-mobile .nav-pills {
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.5);
+    border-radius: 10px;
+}
+
+.horario-mobile .nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+}
+
+.horario-mobile .nav-link.active {
+    background: var(--primary-color);
+}
+
+.horario-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.horario-header {
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.card-aula {
+    margin: 0.5rem;
+    border: none;
+    background: rgba(26, 115, 232, 0.03);
+    border-left: 3px solid var(--primary-color);
+}
+
+.card-aula:hover {
+    background: rgba(26, 115, 232, 0.05);
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .table-horario {
+        font-size: 0.8em;
+    }
+
+    .table-horario th {
+        padding: 0.5rem !important;
+    }
+
+    .table-horario td {
+        padding: 0.5rem !important;
+    }
+
+    .disciplina-info {
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+    }
+
+    .disciplina-info strong {
+        font-size: 0.9em;
+    }
+
+    .disciplina-info small {
+        font-size: 0.75em;
+        line-height: 1.2;
+    }
+
+    /* Esconde descrição longa em mobile */
+    .disciplina-info .descricao-completa {
+        display: none;
+    }
+
+    /* Mostra apenas sigla em mobile */
+    .disciplina-info .sigla-mobile {
+        display: block;
+    }
+
+    /* Ajustes para horários */
+    .hora-col {
+        width: 80px !important;
+        white-space: nowrap;
+        font-size: 0.75em;
+    }
+    
+    .horario-mobile {
+        margin: -0.5rem;
+    }
+    
+    .horario-item {
+        margin-bottom: 0.75rem;
+    }
+    
+    .card-aula .card-body {
+        padding: 0.75rem;
+    }
+    
+    .card-aula h6 {
+        font-size: 0.95rem;
+    }
+    
+    .card-aula small {
+        font-size: 0.8rem;
+    }
+}
+
+/* Estilos para a tabela completa de horários */
+.horarios-completos {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(39, 39, 42, 0.3);
+    border-radius: 1rem;
+    border: 1px solid var(--border-zinc-800);
+    backdrop-filter: blur(10px);
+}
+
+.titulo-horarios {
+    color: var(--text-white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.titulo-horarios i {
+    color: var(--blue-400);
+}
+
+.turno-horarios {
+    margin-bottom: 2rem;
+}
+
+.titulo-turno {
+    color: var(--text-white);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.titulo-turno i {
+    color: var(--blue-400);
+}
+
+.table-horario-completo {
+    background: rgba(39, 39, 42, 0.5);
+    border: 1px solid var(--border-zinc-700);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.table-horario-completo thead th {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+    color: var(--text-white);
+    border-color: var(--border-zinc-700);
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem;
+}
+
+.table-horario-completo tbody td {
+    border-color: var(--border-zinc-700);
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.hora-celula {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--text-white);
+    font-weight: 600;
+    border-right: 2px solid var(--border-zinc-700);
+}
+
+.celula-aula {
+    background: rgba(39, 39, 42, 0.3);
+    transition: all 0.3s ease;
+}
+
+.celula-aula:hover {
+    background: rgba(39, 39, 42, 0.5);
+    transform: scale(1.02);
+}
+
+.disciplina-celula {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.disciplina-sigla {
+    display: block;
+    font-weight: 600;
+    color: var(--blue-400);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.disciplina-nome-celula {
+    display: block;
+    color: var(--text-white);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.disciplina-local {
+    display: block;
+    color: var(--text-zinc-400);
+    font-size: 0.625rem;
+    line-height: 1.2;
+}
+
+.celula-conteudo {
+    text-align: center;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.celula-conteudo .text-muted {
+    color: var(--text-zinc-500) !important;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+/* Responsividade para tabela completa */
+@media (max-width: 768px) {
+    .horarios-completos {
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .titulo-horarios {
+        font-size: 1.25rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .titulo-turno {
+        font-size: 1.125rem;
+    }
+    
+    .table-horario-completo {
+        font-size: 0.8rem;
+    }
+    
+    .table-horario-completo thead th {
+        padding: 0.5rem;
+    }
+    
+    .table-horario-completo tbody td {
+        padding: 0.5rem;
+    }
+    
+    .celula-conteudo {
+        min-height: 30px;
+    }
+    
+    .celula-conteudo .text-muted {
+        font-size: 0.75rem;
+    }
+}
+
+/* Estilos para os cards de horários da semana */
+.horarios-semana {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(39, 39, 42, 0.3);
+    border-radius: 1rem;
+    border: 1px solid var(--border-zinc-800);
+    backdrop-filter: blur(10px);
+}
+
+.titulo-horarios-semana {
+    color: var(--text-white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.titulo-horarios-semana i {
+    color: var(--blue-400);
+}
+
+.cards-dias-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.card-dia {
+    background: linear-gradient(135deg, rgba(39, 39, 42, 0.8) 0%, rgba(63, 63, 70, 0.6) 100%);
+    border: 1px solid var(--border-zinc-700);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-dia::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--blue-400), var(--blue-500));
+}
+
+.card-dia:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    border-color: var(--border-zinc-600);
+}
+
+.card-dia-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-zinc-700);
+}
+
+.dia-titulo {
+    color: var(--text-white);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.aulas-count {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+    color: var(--blue-400);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aulas-dia {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.aula-card-resumida {
+    background: rgba(39, 39, 42, 0.5);
+    border: 1px solid var(--border-zinc-700);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.aula-card-resumida:hover {
+    background: rgba(39, 39, 42, 0.7);
+    transform: translateX(5px);
+}
+
+.aula-info-resumida {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.aula-horario {
+    color: var(--blue-400);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.aula-disciplina {
+    color: var(--text-white);
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.aula-local {
+    color: var(--text-zinc-400);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.aula-local i {
+    color: var(--text-zinc-500);
+    font-size: 0.75rem;
+}
+
+/* Status classes para aulas */
+.aula-card-resumida.can-skip {
+    border-left: 3px solid var(--emerald-500);
+}
+
+.aula-card-resumida.be-careful {
+    border-left: 3px solid var(--yellow-500);
+}
+
+.aula-card-resumida.avoid-skip {
+    border-left: 3px solid var(--red-500);
+}
+
+.aula-count-badge {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));
+    color: var(--blue-400);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    margin-left: 0.5rem;
+}
+
+.aula-frequencia {
+    color: var(--text-zinc-400);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.aula-frequencia i {
+    color: var(--emerald-400);
+    font-size: 0.75rem;
+}
+
+.empty-horarios {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-zinc-400);
+}
+
+.empty-horarios i {
+    font-size: 3rem;
+    color: var(--text-zinc-500);
+    margin-bottom: 1rem;
+}
+
+.empty-horarios h4 {
+    color: var(--text-zinc-300);
+    margin-bottom: 0.5rem;
+}
+
+.empty-horarios p {
+    color: var(--text-zinc-500);
+    font-size: 0.9rem;
+}
+
+/* Responsividade para cards da semana */
+@media (max-width: 768px) {
+    .horarios-semana {
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .titulo-horarios-semana {
+        font-size: 1.25rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .cards-dias-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .card-dia {
+        padding: 1rem;
+    }
+    
+    .card-dia-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .dia-titulo {
+        font-size: 1.125rem;
+    }
+    
+    .aulas-count {
+        align-self: flex-start;
+    }
+    
+    .aula-card-resumida {
+        padding: 0.75rem;
+    }
+    
+    .aula-disciplina {
+        font-size: 0.875rem;
+    }
+    
+    .aula-horario {
+        font-size: 0.75rem;
+    }
+    
+    .aula-local {
+        font-size: 0.75rem;
+    }
+} 
