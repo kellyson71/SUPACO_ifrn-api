@@ -14,7 +14,7 @@ if ($isLocalhost) {
     define('REDIRECT_URI', 'http://localhost/SUAP/callback.php');
 } else {
     // Ambiente de produção
-    define('REDIRECT_URI', 'https://suap2.estagiopaudosferros.com/callback.php');
+    define('REDIRECT_URI', 'https://suapaco.estagiopaudosferros.com/callback.php');
 }
 
 // Configurações de depuração

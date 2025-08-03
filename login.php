@@ -90,43 +90,25 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         }
 
         /* Container principal */
-        .login-container {
+        .main-container {
             position: relative;
             z-index: 10;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 2rem;
-        }
-
-        .login-content {
-            width: 100%;
-            max-width: 1200px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        @media (max-width: 768px) {
-            .login-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
         }
 
         /* Seção de apresentação */
         .presentation-section {
-            padding: 2rem;
-        }
-
-        .brand-header {
+            text-align: center;
             margin-bottom: 3rem;
         }
 
+        .brand-header {
+            margin-bottom: 2rem;
+        }
+
         .brand-title {
-            font-size: 3.5rem;
+            font-size: 4rem;
             font-weight: 700;
             color: var(--text-white);
             margin-bottom: 0.5rem;
@@ -136,7 +118,56 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         .brand-subtitle {
             font-size: 1.25rem;
             color: var(--text-zinc-400);
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--emerald-400), var(--emerald-500));
+            color: var(--text-white);
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(52, 211, 153, 0.4);
+            color: var(--text-white);
+            text-decoration: none;
+        }
+
+        .calculator-btn {
+            background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+            color: var(--text-white);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
+        }
+
+        .calculator-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(96, 165, 250, 0.4);
+            color: var(--text-white);
+            text-decoration: none;
         }
 
         .dev-link {
@@ -164,15 +195,10 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         /* Features Grid */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .feature-card {
@@ -216,65 +242,184 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             line-height: 1.5;
         }
 
-        /* Seção de login */
-        .login-section {
-            background: rgba(39, 39, 42, 0.3);
+        /* Modal da Calculadora */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: rgba(39, 39, 42, 0.95);
             border: 1px solid var(--border-zinc-800);
             border-radius: 1.5rem;
-            padding: 3rem;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
             backdrop-filter: blur(20px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
 
-        .login-header {
+        .modal-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
-        .login-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
-        }
-
-        .login-title {
+        .modal-title {
             font-size: 2rem;
             font-weight: 700;
             color: var(--text-white);
             margin-bottom: 0.5rem;
         }
 
-        .login-subtitle {
+        .modal-subtitle {
             color: var(--text-zinc-400);
             font-size: 1rem;
         }
 
-        /* Botão de login */
-        .login-btn {
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-zinc-400);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-white);
+        }
+
+        /* Calculadora */
+        .calculator-form {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-white);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(39, 39, 42, 0.5);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 0.75rem;
+            color: var(--text-white);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--emerald-400);
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-zinc-500);
+        }
+
+        .calculate-btn {
             width: 100%;
             padding: 1rem 2rem;
-            background: linear-gradient(135deg, var(--emerald-400), var(--emerald-500));
+            background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
             border: none;
             border-radius: 1rem;
             color: var(--text-white);
             font-size: 1.1rem;
             font-weight: 600;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
+            cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.3);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
         }
 
-        .login-btn:hover {
+        .calculate-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(52, 211, 153, 0.4);
+            box-shadow: 0 12px 35px rgba(96, 165, 250, 0.4);
+        }
+
+        /* Resultado da calculadora */
+        .calculator-result {
+            background: rgba(39, 39, 42, 0.5);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .calculator-result.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
             color: var(--text-white);
-            text-decoration: none;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-zinc-800);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: var(--text-zinc-400);
+            font-size: 0.9rem;
+        }
+
+        .result-value {
+            color: var(--text-white);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .result-value.success {
+            color: var(--emerald-400);
+        }
+
+        .result-value.warning {
+            color: var(--blue-400);
+        }
+
+        .result-value.danger {
+            color: var(--red-400);
         }
 
         /* Alertas */
@@ -304,9 +449,9 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         }
 
         /* Footer */
-        .login-footer {
+        .main-footer {
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 3rem;
             padding-top: 2rem;
             border-top: 1px solid var(--border-zinc-800);
         }
@@ -372,7 +517,7 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
 
         /* Responsividade */
         @media (max-width: 768px) {
-            .login-container {
+            .main-container {
                 padding: 1rem;
             }
 
@@ -380,8 +525,14 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
                 font-size: 2.5rem;
             }
 
-            .login-section {
-                padding: 2rem;
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
             }
 
             .floating-header {
@@ -392,11 +543,17 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             }
 
             .features-grid {
+                grid-template-columns: 1fr;
                 gap: 1rem;
             }
 
             .feature-card {
                 padding: 1rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
             }
         }
 
@@ -416,33 +573,18 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             }
         }
 
-        .slide-in-left {
-            animation: slideInLeft 0.8s ease-out;
+        .slide-in-up {
+            animation: slideInUp 0.8s ease-out;
         }
 
-        @keyframes slideInLeft {
+        @keyframes slideInUp {
             from {
                 opacity: 0;
-                transform: translateX(-30px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .slide-in-right {
-            animation: slideInRight 0.8s ease-out;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
     </style>
@@ -467,97 +609,133 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         </a>
 
         <!-- Container Principal -->
-        <div class="login-container">
-            <div class="login-content">
-                <!-- Seção de Apresentação -->
-                <div class="presentation-section slide-in-left">
-                    <div class="brand-header">
-                        <h1 class="brand-title">SUPACO</h1>
-                        <p class="brand-subtitle">Sistema Útil Pra Aluno Cansado e Ocupado</p>
-                        <a href="https://github.com/Kellyson71" target="_blank" class="dev-link">
-                            <i class="fab fa-github"></i>
-                            <span>Desenvolvido por Kellyson</span>
-                        </a>
-                    </div>
-
-                    <div class="features-grid">
-                        <div class="feature-card fade-in" style="animation-delay: 0.1s;">
-                            <div class="feature-icon">
-                                <i class="fas fa-check-circle fa-lg"></i>
-                            </div>
-                            <h3 class="feature-title">Controle de Frequência</h3>
-                            <p class="feature-description">Monitore suas faltas e saiba quando pode faltar sem preocupações</p>
-                        </div>
-
-                        <div class="feature-card fade-in" style="animation-delay: 0.2s;">
-                            <div class="feature-icon">
-                                <i class="fas fa-calculator fa-lg"></i>
-                            </div>
-                            <h3 class="feature-title">Calculadora de Notas</h3>
-                            <p class="feature-description">Simule suas notas e descubra quanto precisa para passar</p>
-                        </div>
-
-                        <div class="feature-card fade-in" style="animation-delay: 0.3s;">
-                            <div class="feature-icon">
-                                <i class="fas fa-calendar fa-lg"></i>
-                            </div>
-                            <h3 class="feature-title">Horários Inteligentes</h3>
-                            <p class="feature-description">Visualize suas aulas de forma organizada e prática</p>
-                        </div>
-
-                        <div class="feature-card fade-in" style="animation-delay: 0.4s;">
-                            <div class="feature-icon">
-                                <i class="fas fa-sync fa-lg"></i>
-                            </div>
-                            <h3 class="feature-title">Sincronização SUAP</h3>
-                            <p class="feature-description">Seus dados sempre atualizados com o sistema do IFRN</p>
-                        </div>
-                    </div>
+        <div class="main-container">
+            <!-- Seção de Apresentação -->
+            <div class="presentation-section slide-in-up">
+                <div class="brand-header">
+                    <h1 class="brand-title">SUPACO</h1>
+                    <p class="brand-subtitle">Sistema Útil Pra Aluno Cansado e Ocupado</p>
                 </div>
 
-                <!-- Seção de Login -->
-                <div class="login-section slide-in-right">
-                    <div class="login-header">
-                        <img src="assets/logo.png" alt="SUPACO Logo" class="login-logo">
-                        <h2 class="login-title">Bem-vindo ao SUPACO</h2>
-                        <p class="login-subtitle">Faça login com suas credenciais do SUAP</p>
-                    </div>
-
-                    <a href="<?php echo $auth_url; ?>" class="login-btn">
+                <!-- Botões de Ação -->
+                <div class="action-buttons">
+                    <a href="<?php echo $auth_url; ?>" class="action-btn login-btn">
                         <i class="fas fa-sign-in-alt"></i>
                         <span>Entrar com SUAP</span>
                     </a>
+                    <button class="action-btn calculator-btn" onclick="openCalculator()">
+                        <i class="fas fa-calculator"></i>
+                        <span>Calculadora de Notas</span>
+                    </button>
+                </div>
 
-                    <?php if (isset($_GET['erro'])): ?>
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle alert-icon"></i>
-                            <span>
-                                <?php
-                                $mensagem = "Ocorreu um erro durante a autenticação.";
+                <a href="https://github.com/Kellyson71" target="_blank" class="dev-link">
+                    <i class="fab fa-github"></i>
+                    <span>Desenvolvido por Kellyson</span>
+                </a>
+            </div>
 
-                                if ($_GET['erro'] === 'sessao_expirada') {
-                                    $mensagem = "A sua sessão expirou. Por favor, faça login novamente.";
-                                } elseif ($_GET['erro'] === 'usuario_nao_encontrado') {
-                                    $mensagem = "Não foi possível obter seus dados do SUAP. Por favor, tente novamente.";
-                                } elseif ($_GET['erro'] === 'token_invalido') {
-                                    $mensagem = "Token de acesso inválido. Por favor, faça login novamente.";
-                                }
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-card fade-in" style="animation-delay: 0.1s;">
+                    <div class="feature-icon">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                    <h3 class="feature-title">Controle de Frequência</h3>
+                    <p class="feature-description">Monitore suas faltas e saiba quando pode faltar sem preocupações</p>
+                </div>
 
-                                echo $mensagem;
-                                ?>
-                            </span>
-                        </div>
-                    <?php else: ?>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle alert-icon"></i>
-                            <span>Suas credenciais são gerenciadas diretamente pelo SUAP. O login é seguro e criptografado.</span>
-                        </div>
-                    <?php endif; ?>
+                <div class="feature-card fade-in" style="animation-delay: 0.2s;">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator fa-lg"></i>
+                    </div>
+                    <h3 class="feature-title">Calculadora de Notas</h3>
+                    <p class="feature-description">Simule suas notas e descubra quanto precisa para passar</p>
+                </div>
 
-                    <div class="login-footer">
-                        <p class="footer-text">
-                            Desenvolvido com <i class="fas fa-heart heart-icon"></i> por estudantes do IFRN
-                        </p>
+                <div class="feature-card fade-in" style="animation-delay: 0.3s;">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar fa-lg"></i>
+                    </div>
+                    <h3 class="feature-title">Horários Inteligentes</h3>
+                    <p class="feature-description">Visualize suas aulas de forma organizada e prática</p>
+                </div>
+
+                <div class="feature-card fade-in" style="animation-delay: 0.4s;">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync fa-lg"></i>
+                    </div>
+                    <h3 class="feature-title">Sincronização SUAP</h3>
+                    <p class="feature-description">Seus dados sempre atualizados com o sistema do IFRN</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="main-footer">
+                <p class="footer-text">
+                    Desenvolvido com <i class="fas fa-heart heart-icon"></i> por estudantes do IFRN
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal da Calculadora -->
+        <div class="modal-overlay" id="calculatorModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeCalculator()">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="modal-header">
+                    <div class="section-logo" style="background: linear-gradient(135deg, var(--blue-400), var(--blue-500)); display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 1rem; margin: 0 auto 1.5rem; box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);">
+                        <i class="fas fa-calculator fa-2x text-white"></i>
+                    </div>
+                    <h2 class="modal-title">Calculadora de Notas</h2>
+                    <p class="modal-subtitle">Sistema IF: MD = (2×N1 + 3×N2) ÷ 5</p>
+                </div>
+
+                <form class="calculator-form" id="calculatorForm">
+                    <div class="form-group">
+                        <label class="form-label">Período</label>
+                        <select class="form-control" id="periodo" required>
+                            <option value="">Selecione o período</option>
+                            <option value="2">2 Bimestres</option>
+                            <option value="4">4 Bimestres</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nota do 1º Bimestre (N1)</label>
+                        <input type="number" class="form-control" id="n1" min="0" max="100" step="0.1" placeholder="Digite sua nota">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nota do 2º Bimestre (N2)</label>
+                        <input type="number" class="form-control" id="n2" min="0" max="100" step="0.1" placeholder="Digite sua nota">
+                    </div>
+
+                    <button type="submit" class="calculate-btn">
+                        <i class="fas fa-calculator"></i>
+                        <span>Calcular</span>
+                    </button>
+                </form>
+
+                <div class="calculator-result" id="calculatorResult">
+                    <h3 class="result-title">Resultado do Cálculo</h3>
+                    <div class="result-item">
+                        <span class="result-label">Média Direta (MD):</span>
+                        <span class="result-value" id="mediaDireta">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Situação:</span>
+                        <span class="result-value" id="situacao">-</span>
+                    </div>
+                    <div class="result-item" id="notaNecessariaItem" style="display: none;">
+                        <span class="result-label">Nota necessária:</span>
+                        <span class="result-value" id="notaNecessaria">-</span>
+                    </div>
+                    <div class="result-item" id="afItem" style="display: none;">
+                        <span class="result-label">Nota AF necessária:</span>
+                        <span class="result-value" id="notaAF">-</span>
                     </div>
                 </div>
             </div>
@@ -565,6 +743,206 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para abrir a calculadora
+        function openCalculator() {
+            document.getElementById('calculatorModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Função para fechar a calculadora
+        function closeCalculator() {
+            document.getElementById('calculatorModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('calculatorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCalculator();
+            }
+        });
+
+        // Função para calcular a média direta (sistema IF)
+        function calcularMediaDireta(n1, n2) {
+            if (n1 === null || n2 === null) {
+                return null;
+            }
+            return (2 * n1 + 3 * n2) / 5;
+        }
+
+        // Função para calcular nota necessária
+        function calcularNotaNecessariaIF(n1, n2) {
+            const resultado = {
+                n1: n1,
+                n2: n2,
+                media_atual: null,
+                nota_necessaria: null,
+                situacao: 'indefinida',
+                pode_passar_direto: false,
+                precisa_af: false,
+                ja_aprovado: false,
+                ja_reprovado: false
+            };
+
+            if (n1 !== null && n2 !== null) {
+                const md = calcularMediaDireta(n1, n2);
+                resultado.media_atual = md;
+
+                if (md >= 60) {
+                    resultado.situacao = 'aprovado_direto';
+                    resultado.ja_aprovado = true;
+                    resultado.pode_passar_direto = true;
+                } else if (md >= 20) {
+                    resultado.situacao = 'avaliacao_final';
+                    resultado.precisa_af = true;
+                } else {
+                    resultado.situacao = 'reprovado_nota';
+                    resultado.ja_reprovado = true;
+                }
+            } else if (n1 !== null && n2 === null) {
+                const nota_necessaria = (300 - 2 * n1) / 3;
+                resultado.nota_necessaria = Math.max(0, Math.min(100, nota_necessaria));
+                resultado.situacao = 'aguardando_n2';
+                if (nota_necessaria <= 100) {
+                    resultado.pode_passar_direto = true;
+                }
+            } else if (n1 === null && n2 !== null) {
+                const nota_necessaria = (300 - 3 * n2) / 2;
+                resultado.nota_necessaria = Math.max(0, Math.min(100, nota_necessaria));
+                resultado.situacao = 'aguardando_n1';
+            } else {
+                resultado.situacao = 'aguardando_notas';
+            }
+
+            return resultado;
+        }
+
+        // Função para calcular avaliação final
+        function calcularAvaliacaoFinal(n1, n2) {
+            const md = calcularMediaDireta(n1, n2);
+            
+            const naf1 = 120 - md;
+            const naf2 = (300 - 3 * n2) / 2;
+            const naf3 = (300 - 2 * n1) / 3;
+            
+            const naf_necessaria = Math.min(naf1, naf2, naf3);
+            return Math.max(0, Math.min(100, naf_necessaria));
+        }
+
+        // Event listener para o formulário
+        document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const periodo = document.getElementById('periodo').value;
+            const n1 = document.getElementById('n1').value ? parseFloat(document.getElementById('n1').value) : null;
+            const n2 = document.getElementById('n2').value ? parseFloat(document.getElementById('n2').value) : null;
+
+            if (!periodo) {
+                alert('Por favor, selecione o período.');
+                return;
+            }
+
+            if (n1 === null && n2 === null) {
+                alert('Por favor, insira pelo menos uma nota.');
+                return;
+            }
+
+            // Calcula baseado no período
+            let resultado;
+            if (periodo === '2') {
+                // Sistema IF (2 bimestres)
+                resultado = calcularNotaNecessariaIF(n1, n2);
+            } else {
+                // Sistema tradicional (4 bimestres) - implementação simplificada
+                const notas = [n1, n2, null, null].filter(n => n !== null);
+                const media = notas.reduce((sum, nota) => sum + nota, 0) / notas.length;
+                resultado = {
+                    media_atual: media,
+                    situacao: media >= 60 ? 'aprovado_direto' : (media >= 20 ? 'avaliacao_final' : 'reprovado_nota'),
+                    nota_necessaria: null
+                };
+            }
+
+            // Exibe os resultados
+            const resultDiv = document.getElementById('calculatorResult');
+            const mediaDiretaSpan = document.getElementById('mediaDireta');
+            const situacaoSpan = document.getElementById('situacao');
+            const notaNecessariaItem = document.getElementById('notaNecessariaItem');
+            const notaNecessariaSpan = document.getElementById('notaNecessaria');
+            const afItem = document.getElementById('afItem');
+            const notaAFSpan = document.getElementById('notaAF');
+
+            // Limpa classes de cor anteriores
+            mediaDiretaSpan.className = 'result-value';
+            situacaoSpan.className = 'result-value';
+
+            if (resultado.media_atual !== null) {
+                mediaDiretaSpan.textContent = resultado.media_atual.toFixed(1);
+                if (resultado.media_atual >= 60) {
+                    mediaDiretaSpan.classList.add('success');
+                } else if (resultado.media_atual >= 20) {
+                    mediaDiretaSpan.classList.add('warning');
+                } else {
+                    mediaDiretaSpan.classList.add('danger');
+                }
+            } else {
+                mediaDiretaSpan.textContent = '-';
+            }
+
+            // Define a situação
+            let situacaoText = '';
+            let situacaoClass = '';
+            switch (resultado.situacao) {
+                case 'aprovado_direto':
+                    situacaoText = 'Aprovado Direto';
+                    situacaoClass = 'success';
+                    break;
+                case 'avaliacao_final':
+                    situacaoText = 'Avaliação Final';
+                    situacaoClass = 'warning';
+                    break;
+                case 'reprovado_nota':
+                    situacaoText = 'Reprovado por Nota';
+                    situacaoClass = 'danger';
+                    break;
+                case 'aguardando_n2':
+                    situacaoText = 'Aguardando N2';
+                    situacaoClass = 'warning';
+                    break;
+                case 'aguardando_n1':
+                    situacaoText = 'Aguardando N1';
+                    situacaoClass = 'warning';
+                    break;
+                default:
+                    situacaoText = 'Aguardando Notas';
+                    situacaoClass = 'warning';
+            }
+            situacaoSpan.textContent = situacaoText;
+            situacaoSpan.classList.add(situacaoClass);
+
+            // Mostra nota necessária se aplicável
+            if (resultado.nota_necessaria !== null) {
+                notaNecessariaItem.style.display = 'flex';
+                notaNecessariaSpan.textContent = resultado.nota_necessaria.toFixed(1);
+            } else {
+                notaNecessariaItem.style.display = 'none';
+            }
+
+            // Mostra nota AF se aplicável
+            if (resultado.situacao === 'avaliacao_final' && n1 !== null && n2 !== null) {
+                afItem.style.display = 'flex';
+                const afNecessaria = calcularAvaliacaoFinal(n1, n2);
+                notaAFSpan.textContent = afNecessaria.toFixed(1);
+            } else {
+                afItem.style.display = 'none';
+            }
+
+            // Mostra o resultado
+            resultDiv.classList.add('show');
+        });
+    </script>
 </body>
 
 </html>
