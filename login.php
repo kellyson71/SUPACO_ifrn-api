@@ -599,7 +599,7 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
         <a href="https://github.com/kellyson71/IF-calc" target="_blank" class="floating-header">
             <div class="version-badge">
                 <i class="fas fa-code-branch"></i>
-                <span>v2.4</span>
+                <span>v2.6</span>
             </div>
             <div class="beta-badge">
                 <i class="fas fa-star"></i>
