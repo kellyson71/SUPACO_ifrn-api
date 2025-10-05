@@ -14,7 +14,7 @@ if ($isLocalhost) {
     define('REDIRECT_URI', 'http://localhost/SUAP/callback.php');
 } else {
     // Ambiente de produção - verificar se precisa de ajuste
-    $production_domain = 'suapaco.estagiopaudosferros.com';
+    $production_domain = 'supaco.estagiopaudosferros.com';
     define('REDIRECT_URI', 'https://' . $production_domain . '/callback.php');
 }
 
