@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/Chart.min.css">
 
     <!-- Dark Theme CSS -->
-    <link href="assets/dark-theme.css" rel="stylesheet">
+    <link href="assets/css/dark-theme.css" rel="stylesheet">
 
     <style>
         /* Tema escuro global */
@@ -1234,8 +1234,8 @@
                     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-                    <script src="assets/day-selector.js"></script>
-                    <script src="assets/notification.js"></script>
+                    <script src="assets/js/day-selector.js"></script>
+                    <script src="assets/js/notification.js"></script>
                     <script>
                         // Inicialização dos elementos da interface
                         document.addEventListener('DOMContentLoaded', function() { // Evitar execução múltipla

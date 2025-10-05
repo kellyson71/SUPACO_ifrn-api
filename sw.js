@@ -13,11 +13,11 @@ const STATIC_CACHE_URLS = [
   "/SUAP/offline.php",
   "/SUAP/offline.html",
   "/SUAP/manifest.json",
-  "/SUAP/assets/offline.js",
-  "/SUAP/assets/dashboard.css",
-  "/SUAP/assets/simple-style.css",
-  "/SUAP/assets/logo.png",
-  "/SUAP/assets/pattern.png",
+  "/SUAP/assets/js/offline.js",
+  "/SUAP/assets/css/dashboard.css",
+  "/SUAP/assets/css/simple-style.css",
+  "/SUAP/assets/images/logo.png",
+  "/SUAP/assets/images/pattern.png",
 ];
 
 // CDNs que devem ser cacheados

@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SUPACO">
-    <link rel="apple-touch-icon" href="assets/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" href="assets/images/icon-152x152.png">
 
     <!-- CSS -->
     <!-- Bootstrap 5 com tema personalizado -->
@@ -30,11 +30,11 @@
     <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
     <!-- Chart.js para gráficos interativos -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/Chart.min.css"> <!-- Custom Styles -->
-    <link href="assets/day-selector.css" rel="stylesheet">
-    <link href="assets/dashboard.css" rel="stylesheet">
-    <link href="assets/status-style.css" rel="stylesheet">
+    <link href="assets/css/day-selector.css" rel="stylesheet">
+    <link href="assets/css/dashboard.css" rel="stylesheet">
+    <link href="assets/css/status-style.css" rel="stylesheet">
     <!-- Offline Visual Styles -->
-    <link href="assets/offline-styles.css" rel="stylesheet">
+    <link href="assets/css/offline-styles.css" rel="stylesheet">
     <style>
         /* Ajustes para espaçamento do banner offline */
         body.has-offline-banner {
@@ -168,9 +168,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-    <script src="assets/day-selector.js"></script>
-    <script src="assets/notification.js"></script>
-    <script src="assets/offline_optimized.js"></script>
+    <script src="assets/js/day-selector.js"></script>
+    <script src="assets/js/notification.js"></script>
+    <script src="assets/js/offline_optimized.js"></script>
 
     <!-- Registro do Service Worker -->
     <script>
@@ -220,7 +220,7 @@
     </script>
 
     <!-- PWA Enhanced Scripts -->
-    <script src="assets/offline-cache.js"></script>
+    <script src="assets/js/offline-cache.js"></script>
 </body>
 
 </html>

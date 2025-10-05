@@ -16,16 +16,19 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 
     <!-- Dark Theme CSS -->
-    <link href="assets/dark-theme.css" rel="stylesheet">
+    <link href="assets/css/dark-theme.css" rel="stylesheet">
     
     <!-- Aulas Section CSS -->
-    <link href="assets/aulas-section.css" rel="stylesheet">
+    <link href="assets/css/aulas-section.css" rel="stylesheet">
     
     <!-- Boletim Modern CSS -->
-    <link href="assets/boletim-modern.css" rel="stylesheet">
+    <link href="assets/css/boletim-modern.css" rel="stylesheet">
     
     <!-- Horários Styles CSS -->
-    <link href="assets/horarios-styles.css" rel="stylesheet">
+    <link href="assets/css/horarios-styles.css" rel="stylesheet">
+    
+    <!-- Dashboard CSS -->
+    <link href="assets/css/dashboard.css" rel="stylesheet">
 
     <style>
         /* Tema escuro global override Bootstrap */
@@ -444,6 +447,20 @@
                 simN2.addEventListener('input', calcularSimulacao);
             }
         });
+
+        // Função para mostrar/ocultar detalhes das aulas
+        function toggleAulasDetails() {
+            const detailsElement = document.getElementById('aulasDetails');
+            const button = document.querySelector('.btn-details-toggle');
+            
+            if (detailsElement.style.display === 'none') {
+                detailsElement.style.display = 'block';
+                button.innerHTML = '<i class="fas fa-eye-slash"></i><span>Ocultar</span>';
+            } else {
+                detailsElement.style.display = 'none';
+                button.innerHTML = '<i class="fas fa-info-circle"></i><span>Detalhes</span>';
+            }
+        }
     </script>
 
 </body>

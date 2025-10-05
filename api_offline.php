@@ -231,7 +231,7 @@ function getDadosUsuarioExemplo()
         'vinculo' => [
             'curriculo_lattes' => 'https://lattes.cnpq.br/exemplo'
         ],
-        'url_foto_150x200' => 'assets/perfil.png'
+        'url_foto_150x200' => 'assets/images/perfil.png'
     ];
 }
 

@@ -1,6 +1,6 @@
 # Ignorar arquivo de configuração com credenciais
 config.php
-
+config.php
 # Arquivos de sistema
 .DS_Store
 Thumbs.db

@@ -4,7 +4,7 @@
         <!-- Background com gradiente e padrão -->
         <div class="hero-bg position-absolute w-100 h-100"
             style="background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-            background-image: url('assets/pattern.png'), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+            background-image: url('assets/images/pattern.png'), radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
             background-size: cover, 20px 20px;">
         </div>
 
@@ -15,7 +15,7 @@
                 <div class="col-lg-8">
                     <div class="d-flex align-items-center flex-column flex-md-row">
                         <div class="logo-container bg-white rounded-4 p-3 d-inline-block shadow-lg me-md-4 mb-3 mb-md-0">
-                            <img src="assets/logo.png"
+                            <img src="assets/images/logo.png"
                                 alt="SUPACO Logo"
                                 class="img-fluid rounded-4"
                                 style="width: 100px; height: 100px; object-fit: cover;">

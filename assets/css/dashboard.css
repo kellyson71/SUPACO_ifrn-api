@@ -359,3 +359,152 @@
   background-color: rgba(239, 68, 68, 0.1);
   color: #b91c1c;
 }
+
+/* Estilos para as próximas aulas simples */
+.aulas-summary {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.aulas-nomes {
+  font-size: 0.875rem;
+  color: var(--text-zinc-300);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.btn-details-toggle {
+  background: none;
+  border: none;
+  color: var(--text-zinc-400);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-details-toggle:hover {
+  color: var(--blue-400);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.btn-details-toggle i {
+  font-size: 0.7rem;
+}
+
+.aulas-details-simple {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.aula-simple-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.aula-simple-item:last-child {
+  border-bottom: none;
+}
+
+.aula-simple-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.aula-simple-nome {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-white);
+  flex: 1;
+}
+
+.aula-simple-count {
+  font-size: 0.65rem;
+  color: var(--text-zinc-400);
+  background: rgba(59, 130, 246, 0.2);
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+}
+
+.status-simple {
+  font-size: 0.7rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-simple.success {
+  color: #22C55E;
+}
+
+.status-simple.warning {
+  color: #F59E0B;
+}
+
+.status-simple.danger {
+  color: #EF4444;
+}
+
+.aula-simple-info {
+  margin-left: 1rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.7rem;
+  color: var(--text-zinc-300);
+  margin-bottom: 0.125rem;
+}
+
+.info-row i {
+  width: 10px;
+  color: var(--text-zinc-500);
+  flex-shrink: 0;
+  font-size: 0.65rem;
+}
+
+.info-row span {
+  flex: 1;
+  line-height: 1.2;
+}
+
+.faltas-simple {
+  color: var(--text-zinc-400);
+  font-size: 0.65rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .aulas-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .aula-simple-nome {
+    font-size: 0.75rem;
+  }
+  
+  .info-row {
+    font-size: 0.65rem;
+  }
+}

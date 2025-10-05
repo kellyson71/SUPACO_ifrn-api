@@ -11,7 +11,7 @@ function getStatusFaltaImagem($podeFaltar)
     switch ($podeFaltar) {
         case 'success':
             return [
-                'imagem' => 'assets/tranquilo.png',
+                'imagem' => 'assets/images/tranquilo.png',
                 'classe' => 'bg-success',
                 'descricao' => 'Pode faltar com tranquilidade',
                 'icone' => 'fa-check-circle',
@@ -20,7 +20,7 @@ function getStatusFaltaImagem($podeFaltar)
             ];
         case 'warning':
             return [
-                'imagem' => 'assets/mais ou menos.png',
+                'imagem' => 'assets/images/mais ou menos.png',
                 'classe' => 'bg-warning',
                 'descricao' => 'Fique atento às faltas',
                 'icone' => 'fa-exclamation-triangle',
@@ -30,7 +30,7 @@ function getStatusFaltaImagem($podeFaltar)
         case 'danger':
         default:
             return [
-                'imagem' => 'assets/perigo.png',
+                'imagem' => 'assets/images/perigo.png',
                 'classe' => 'bg-danger',
                 'descricao' => 'Evite faltar',
                 'icone' => 'fa-times-circle',

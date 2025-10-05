@@ -1163,6 +1163,106 @@ if (!empty($proximaAula['aulas'])) {
                             <span class="class-count"><?php echo count($proximaAula['aulas']); ?> aula(s)</span>
                         <?php endif; ?>
                     </div>
+                    
+                    <?php if (!empty($proximaAula['aulas'])): ?>
+                        <?php
+                        // Agrupa aulas consecutivas da mesma disciplina
+                        $aulasAgrupadas = agruparAulasConsecutivas($proximaAula['aulas']);
+                        $disciplinasNomes = array();
+                        
+                        foreach ($aulasAgrupadas as $grupo) {
+                            $aula = $grupo[0];
+                            $nomeDisciplina = isset($aula['descricao']) ? $aula['descricao'] : ($aula['disciplina'] ?? 'Aula');
+                            $quantidade = count($grupo);
+                            $disciplinasNomes[] = $quantidade > 1 ? "({$quantidade}) {$nomeDisciplina}" : $nomeDisciplina;
+                        }
+                        ?>
+                        <div class="aulas-summary">
+                            <span class="aulas-nomes"><?php echo implode(', ', $disciplinasNomes); ?></span>
+                            <button class="btn-details-toggle" onclick="toggleAulasDetails()">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Detalhes</span>
+                            </button>
+                        </div>
+                        
+                        <div class="aulas-details-simple" id="aulasDetails" style="display: none;">
+                            <?php foreach ($aulasAgrupadas as $index => $grupo): ?>
+                                <?php
+                                $aula = $grupo[0];
+                                $quantidadeAulas = count($grupo);
+                                $nomeDisciplina = isset($aula['descricao']) ? $aula['descricao'] : ($aula['disciplina'] ?? 'Aula');
+                                
+                                // Encontra a disciplina correspondente no boletim
+                                $disciplinaBoletim = null;
+                                $impactoFalta = null;
+                                $podeFaltar = 'danger';
+                                
+                                if (isset($boletim)) {
+                                    foreach ($boletim as $item) {
+                                        if (isset($aula['sigla']) && strpos($item['disciplina'], $aula['sigla']) !== false) {
+                                            $disciplinaBoletim = $item;
+                                            $impactoFalta = calcularImpactoFalta($item);
+                                            $podeFaltar = podeFaltarAmanha($item);
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // Combina os horários de todas as aulas do grupo
+                                $horariosGrupo = array();
+                                foreach ($grupo as $aulaGrupo) {
+                                    if (isset($aulaGrupo['horario_detalhado'])) {
+                                        $horariosGrupo[] = $aulaGrupo['horario_detalhado'];
+                                    }
+                                }
+                                $horarioCombinado = implode(' + ', $horariosGrupo);
+                                ?>
+                                <div class="aula-simple-item">
+                                    <div class="aula-simple-header">
+                                        <span class="aula-simple-nome"><?php echo htmlspecialchars($nomeDisciplina); ?></span>
+                                        <?php if ($quantidadeAulas > 1): ?>
+                                            <span class="aula-simple-count"><?php echo $quantidadeAulas; ?> aulas</span>
+                                        <?php endif; ?>
+                                        <span class="status-simple <?php echo $podeFaltar; ?>">
+                                            <i class="fas fa-<?php echo $podeFaltar === 'success' ? 'check' : ($podeFaltar === 'warning' ? 'exclamation' : 'times'); ?>"></i>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="aula-simple-info">
+                                        <div class="info-row">
+                                            <i class="fas fa-clock"></i>
+                                            <span><?php echo $horarioCombinado; ?></span>
+                                        </div>
+                                        
+                                        <div class="info-row">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>
+                                                <?php
+                                                if (isset($aula['locais']) && is_array($aula['locais']) && !empty($aula['locais'])) {
+                                                    echo htmlspecialchars(implode(', ', $aula['locais']));
+                                                } else if (isset($aula['local']) && !empty($aula['local'])) {
+                                                    echo htmlspecialchars($aula['local']);
+                                                } else {
+                                                    echo 'Local não definido';
+                                                }
+                                                ?>
+                                            </span>
+                                        </div>
+                                        
+                                        <?php if ($impactoFalta && isset($impactoFalta['faltas_restantes'])): ?>
+                                            <div class="info-row faltas-simple">
+                                                <i class="fas fa-calendar-times"></i>
+                                                <span>
+                                                    <strong><?php echo $impactoFalta['faltas_atuais']; ?></strong>/<strong><?php echo $impactoFalta['maximo_faltas']; ?></strong> faltas 
+                                                    (<strong><?php echo $impactoFalta['faltas_restantes']; ?></strong> restantes)
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <div class="frequency-info">
