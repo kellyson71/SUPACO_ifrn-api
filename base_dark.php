@@ -29,6 +29,20 @@
     
     <!-- Dashboard CSS -->
     <link href="assets/css/dashboard.css" rel="stylesheet">
+    
+    <!-- Offline Indicator CSS -->
+    <link href="assets/css/offline-indicator.css" rel="stylesheet">
+    
+    <!-- LocalStorage Manager -->
+    <script src="assets/js/localStorage-manager.js"></script>
+    
+    <!-- App Cache Manager -->
+    <script src="assets/js/app-cache-manager.js"></script>
+    
+    <!-- Test Offline System (apenas em desenvolvimento) -->
+    <?php if (isset($_GET['debug']) && $_GET['debug'] === '1'): ?>
+    <script src="assets/js/test-offline-system.js"></script>
+    <?php endif; ?>
 
     <style>
         /* Tema escuro global override Bootstrap */
@@ -1102,11 +1116,146 @@
             URL.revokeObjectURL(url);
         }
     </script>
+    
+    <script>
+        // Sistema de cache completo da aplicação
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Inicializa o AppCacheManager
+            if (typeof AppCacheManager !== 'undefined') {
+                await AppCacheManager.init();
+                
+                // Carrega dados do cache
+                const cachedData = await AppCacheManager.getAppData();
+                if (cachedData) {
+                    console.log('SUPACO: Carregando dados do cache');
+                    AppCacheManager.updateInterface(cachedData);
+                    
+                    // Se está offline, mostra aviso discreto
+                    if (!AppCacheManager.isOnline) {
+                        showCacheWarning();
+                    }
+                }
+            }
+            
+            <?php if (isset($basicDataWarning) && $basicDataWarning): ?>
+                // Sistema legado para compatibilidade
+                if (typeof LocalStorageManager !== 'undefined') {
+                    LocalStorageManager.showBasicDataWarning();
+                    
+                    const availableData = LocalStorageManager.getAvailableData();
+                    if (availableData && availableData.data) {
+                        console.log('SUPACO: Substituindo dados básicos pelos dados do localStorage:', availableData.source);
+                        updatePageWithLocalStorageData(availableData.data);
+                    }
+                }
+                
+                if (!LocalStorageManager.hasValidData()) {
+                    LocalStorageManager.initializeBasicData();
+                }
+            <?php endif; ?>
+            
+            // Salva dados reais no cache quando disponíveis
+            <?php if (isset($usingBasicData) && !$usingBasicData && isset($meusDados) && $meusDados): ?>
+                if (typeof AppCacheManager !== 'undefined') {
+                    const appData = {
+                        meusDados: <?php echo json_encode($meusDados); ?>,
+                        boletim: <?php echo json_encode($boletim ?? []); ?>,
+                        horarios: <?php echo json_encode($horarios ?? []); ?>,
+                        anoLetivo: <?php echo $anoLetivo ?? date('Y'); ?>,
+                        periodoLetivo: <?php echo $periodoLetivo ?? (date('n') <= 6 ? 1 : 2); ?>
+                    };
+                    
+                    AppCacheManager.saveAppData(appData);
+                    console.log('SUPACO: Dados reais salvos no cache');
+                }
+                
+                // Compatibilidade com sistema legado
+                if (typeof LocalStorageManager !== 'undefined') {
+                    const userData = {
+                        meusDados: <?php echo json_encode($meusDados); ?>,
+                        boletim: <?php echo json_encode($boletim ?? []); ?>,
+                        horarios: <?php echo json_encode($horarios ?? []); ?>,
+                        anoLetivo: <?php echo $anoLetivo ?? date('Y'); ?>,
+                        periodoLetivo: <?php echo $periodoLetivo ?? (date('n') <= 6 ? 1 : 2); ?>
+                    };
+                    
+                    LocalStorageManager.saveUserData(userData);
+                    console.log('SUPACO: Dados reais salvos no localStorage (legado)');
+                }
+            <?php endif; ?>
+        });
+        
+        // Função para mostrar aviso de cache
+        function showCacheWarning() {
+            const existingWarning = document.getElementById('cache-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
 
-</body>
+            const warning = document.createElement('div');
+            warning.id = 'cache-warning';
+            warning.className = 'cache-warning show';
+            warning.innerHTML = `
+                <i class="fas fa-database"></i>
+                <span>Dados salvos</span>
+            `;
 
-</html>
-</script>
+            document.body.appendChild(warning);
+
+            // Remove após 3 segundos
+            setTimeout(() => {
+                if (warning.parentElement) {
+                    warning.classList.remove('show');
+                    setTimeout(() => {
+                        if (warning.parentElement) {
+                            warning.remove();
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+        
+        // Função para atualizar a página com dados do localStorage
+        function updatePageWithLocalStorageData(data) {
+            try {
+                // Atualiza informações do usuário
+                if (data.meusDados) {
+                    const nomeElement = document.querySelector('.main-title');
+                    const matriculaElement = document.querySelector('.registration-code');
+                    const cursoElement = document.querySelector('.course-info span');
+                    const fotoElement = document.querySelector('.profile-image');
+                    
+                    if (nomeElement && data.meusDados.nome_usual) {
+                        nomeElement.textContent = data.meusDados.nome_usual;
+                    }
+                    
+                    if (matriculaElement && data.meusDados.matricula) {
+                        matriculaElement.textContent = data.meusDados.matricula;
+                    }
+                    
+                    if (cursoElement && data.meusDados.vinculo && data.meusDados.vinculo.curso) {
+                        cursoElement.textContent = data.meusDados.vinculo.curso;
+                    }
+                    
+                    if (fotoElement && data.meusDados.url_foto_150x200) {
+                        fotoElement.src = data.meusDados.url_foto_150x200;
+                    }
+                }
+                
+                // Atualiza período letivo
+                if (data.anoLetivo && data.periodoLetivo) {
+                    const periodoElement = document.querySelector('.period-badge');
+                    if (periodoElement) {
+                        periodoElement.textContent = `${data.anoLetivo}.${data.periodoLetivo}`;
+                    }
+                }
+                
+                console.log('SUPACO: Página atualizada com dados do localStorage');
+            } catch (error) {
+                console.error('SUPACO: Erro ao atualizar página com dados do localStorage:', error);
+            }
+        }
+    </script>
 
 </body>
 

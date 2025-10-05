@@ -27,6 +27,12 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- LocalStorage Manager -->
+    <script src="assets/js/localStorage-manager.js"></script>
+    
+    <!-- App Cache Manager -->
+    <script src="assets/js/app-cache-manager.js"></script>
+    
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     
@@ -1346,6 +1352,31 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
 
             // Mostra o resultado
             resultDiv.classList.add('show');
+        });
+        
+        // Inicializa sistemas de cache
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Inicializa o novo sistema de cache
+            if (typeof AppCacheManager !== 'undefined') {
+                await AppCacheManager.init();
+                
+                // Verifica se há dados em cache
+                const cachedData = await AppCacheManager.getAppData();
+                if (!cachedData) {
+                    // Se não há dados, inicializa dados básicos
+                    const basicData = AppCacheManager.getBasicAppData();
+                    AppCacheManager.saveAppData(basicData);
+                    console.log('SUPACO: Dados básicos inicializados no cache');
+                }
+            }
+            
+            // Compatibilidade com sistema legado
+            if (typeof LocalStorageManager !== 'undefined') {
+                if (!LocalStorageManager.hasValidData()) {
+                    LocalStorageManager.initializeBasicData();
+                    console.log('SUPACO: Dados básicos inicializados (legado)');
+                }
+            }
         });
     </script>
 </body>

@@ -18,10 +18,28 @@ require_once 'status_falta.php';
 session_start();
 require_once 'horarios.php';
 
-// Autenticação SUAP
+// Autenticação SUAP - com fallback para dados básicos
+$usingBasicData = false;
+$basicDataWarning = false;
+
 if (!isset($_SESSION['access_token'])) {
-    header('Location: login.php');
-    exit;
+    // Verifica se há dados básicos no localStorage (via JavaScript)
+    // Se não houver, redireciona para login
+    echo '<script>
+        if (typeof LocalStorageManager !== "undefined" && LocalStorageManager.hasValidData()) {
+            // Há dados básicos disponíveis, vamos usá-los
+            console.log("SUPACO: Usando dados básicos do localStorage");
+            // Marca que deve usar dados do localStorage
+            window.usingLocalStorageData = true;
+        } else {
+            // Não há dados, redirecionar para login
+            window.location.href = "login.php";
+        }
+    </script>';
+    
+    // Para continuar o processamento PHP, vamos simular dados básicos
+    $usingBasicData = true;
+    $basicDataWarning = true;
 }
 
 // Verificação adicional de autenticação
@@ -803,15 +821,67 @@ function calcularImpactoFalta($disciplina)
 }
 
 // Carregamento inicial dos dados
-$meusDados = getSuapData("minhas-informacoes/meus-dados/");
+if ($usingBasicData) {
+    // Usando dados básicos do localStorage
+    $meusDados = [
+        'nome_usual' => 'Usuário SUPACO',
+        'matricula' => '2024000000',
+        'vinculo' => [
+            'curso' => 'Curso não informado'
+        ],
+        'url_foto_150x200' => 'assets/images/perfil.png',
+        'tipo_usuario' => 'aluno'
+    ];
+    
+    $boletim = [
+        [
+            'disciplina' => 'Exemplo - Disciplina 1',
+            'nota_etapa_1' => ['nota' => null],
+            'nota_etapa_2' => ['nota' => null],
+            'percentual_carga_horaria_frequentada' => 100,
+            'numero_faltas' => 0,
+            'carga_horaria' => 80,
+            'carga_horaria_cumprida' => 40
+        ],
+        [
+            'disciplina' => 'Exemplo - Disciplina 2',
+            'nota_etapa_1' => ['nota' => null],
+            'nota_etapa_2' => ['nota' => null],
+            'percentual_carga_horaria_frequentada' => 100,
+            'numero_faltas' => 0,
+            'carga_horaria' => 80,
+            'carga_horaria_cumprida' => 40
+        ]
+    ];
+    
+    $horarios = [
+        [
+            'sigla' => 'EX1',
+            'descricao' => 'Exemplo - Disciplina 1',
+            'horarios_de_aula' => '2M12,4M34',
+            'locais_de_aula' => ['Sala 101']
+        ],
+        [
+            'sigla' => 'EX2',
+            'descricao' => 'Exemplo - Disciplina 2',
+            'horarios_de_aula' => '3T12,5T34',
+            'locais_de_aula' => ['Lab 01']
+        ]
+    ];
+    
+    $anoLetivo = date('Y');
+    $periodoLetivo = date('n') <= 6 ? 1 : 2;
+} else {
+    // Usando dados reais da API SUAP
+    $meusDados = getSuapData("minhas-informacoes/meus-dados/");
+    $boletim = [];
+    $horarios = [];
+}
 
 // Armazena todas as respostas da API para depuração
 $apiResponses = [
     'meusDados' => $meusDados
 ];
-
-$boletim = [];
-$horarios = [];
 
 // Verificar se há parâmetros de semestre na URL
 $anoSelecionado = null;

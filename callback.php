@@ -165,5 +165,36 @@ if ($user_data && isset($user_data['id'])) {
     exit;
 }
 
+// Salva dados no cache após login bem-sucedido
+echo '<script>
+    // Aguarda o carregamento dos managers
+    document.addEventListener("DOMContentLoaded", function() {
+        // Salva no novo sistema de cache
+        if (typeof AppCacheManager !== "undefined") {
+            const appData = {
+                meusDados: ' . json_encode($user_data) . ',
+                timestamp: Date.now(),
+                version: "1.0.0",
+                isBasic: false
+            };
+            
+            AppCacheManager.saveAppData(appData);
+            console.log("SUPACO: Dados salvos no cache após login");
+        }
+        
+        // Compatibilidade com sistema legado
+        if (typeof LocalStorageManager !== "undefined") {
+            const userData = {
+                meusDados: ' . json_encode($user_data) . ',
+                timestamp: Date.now(),
+                isBasic: false
+            };
+            
+            LocalStorageManager.saveUserData(userData);
+            console.log("SUPACO: Dados salvos no localStorage (legado) após login");
+        }
+    });
+</script>';
+
 header('Location: index.php?auth=success');
 exit;
