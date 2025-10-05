@@ -6,18 +6,25 @@ const DB_VERSION = 1;
 // Recursos essenciais para funcionamento offline
 const STATIC_CACHE_URLS = [
   "/SUAP/",
+  "/SUAP/index.php",
   "/SUAP/index_pwa.php",
+  "/SUAP/base_dark.php",
   "/SUAP/base_pwa.php",
   "/SUAP/boletim_offline.php",
   "/SUAP/horarios_offline.php",
   "/SUAP/offline.php",
   "/SUAP/offline.html",
+  "/SUAP/offline-fallback.html",
   "/SUAP/manifest.json",
   "/SUAP/assets/js/offline.js",
+  "/SUAP/assets/js/localStorage-manager.js",
+  "/SUAP/assets/js/app-cache-manager.js",
   "/SUAP/assets/css/dashboard.css",
   "/SUAP/assets/css/simple-style.css",
+  "/SUAP/assets/css/offline-indicator.css",
   "/SUAP/assets/images/logo.png",
   "/SUAP/assets/images/pattern.png",
+  "/SUAP/assets/images/perfil.png",
 ];
 
 // CDNs que devem ser cacheados
@@ -70,6 +77,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Intercepta todas as páginas do SUPACO (incluindo com parâmetros)
+  if (url.pathname.startsWith('/SUAP/') || url.pathname === '/SUAP') {
+    // Força interceptação para páginas do SUPACO
+    event.respondWith(handleSupacoRequest(request));
+    return;
+  }
+
   // Diferentes estratégias baseadas no tipo de recurso
   if (
     url.pathname.includes("/api_offline.php") ||
@@ -115,9 +129,9 @@ async function networkFirstStrategy(request) {
     return cachedResponse;
   }
 
-  // Se não há cache e é uma página, retorna offline.html
+  // Se não há cache e é uma página, retorna offline-fallback.html
   if (request.headers.get("accept")?.includes("text/html")) {
-    return caches.match("/SUAP/offline.html");
+    return caches.match("/SUAP/offline-fallback.html");
   }
 
   throw new Error("Recurso não disponível offline");
@@ -143,7 +157,7 @@ async function cacheFirstStrategy(request) {
   } catch (error) {
     console.log("SUPACO PWA: Recurso não disponível:", request.url);
     // Retorna resposta offline se disponível
-    return caches.match("/SUAP/offline.html");
+    return caches.match("/SUAP/offline-fallback.html");
   }
 }
 
@@ -164,7 +178,7 @@ async function staleWhileRevalidateStrategy(request) {
     .catch(() => null);
 
   // Retorna cache imediatamente se disponível, senão espera a rede
-  return cachedResponse || fetchPromise || caches.match("/SUAP/offline.html");
+  return cachedResponse || fetchPromise || caches.match("/SUAP/offline-fallback.html");
 }
 
 // Ativação otimizada com limpeza de cache
@@ -247,6 +261,43 @@ async function syncDadosAcademicos() {
   } catch (error) {
     console.error("SUPACO PWA: Erro na sincronização:", error);
   }
+}
+
+// Função específica para lidar com requisições do SUPACO
+async function handleSupacoRequest(request) {
+  const url = new URL(request.url);
+  
+  try {
+    // Primeiro tenta buscar da rede
+    if (navigator.onLine) {
+      const networkResponse = await fetch(request);
+      if (networkResponse.ok) {
+        // Salva no cache para uso offline
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(request, networkResponse.clone());
+        return networkResponse;
+      }
+    }
+  } catch (error) {
+    console.log('SUPACO SW: Falha na rede, tentando cache');
+  }
+
+  // Se falhou na rede, tenta cache
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  // Se não há cache específico, tenta cache do index.php
+  if (url.pathname.includes('index.php')) {
+    const indexCache = await caches.match('/SUAP/index.php');
+    if (indexCache) {
+      return indexCache;
+    }
+  }
+
+  // Último recurso: página offline
+  return caches.match('/SUAP/offline-fallback.html');
 }
 
 // Listener para mensagens da página

@@ -23,23 +23,31 @@ $usingBasicData = false;
 $basicDataWarning = false;
 
 if (!isset($_SESSION['access_token'])) {
-    // Verifica se há dados básicos no localStorage (via JavaScript)
-    // Se não houver, redireciona para login
-    echo '<script>
-        if (typeof LocalStorageManager !== "undefined" && LocalStorageManager.hasValidData()) {
-            // Há dados básicos disponíveis, vamos usá-los
-            console.log("SUPACO: Usando dados básicos do localStorage");
-            // Marca que deve usar dados do localStorage
-            window.usingLocalStorageData = true;
-        } else {
-            // Não há dados, redirecionar para login
-            window.location.href = "login.php";
-        }
-    </script>';
-    
-    // Para continuar o processamento PHP, vamos simular dados básicos
+    // Sempre usa dados básicos quando não autenticado
+    // O JavaScript vai substituir por dados do cache se disponível
     $usingBasicData = true;
     $basicDataWarning = true;
+    
+    echo '<script>
+        // Verifica se há dados no cache
+        if (typeof AppCacheManager !== "undefined") {
+            AppCacheManager.getAppData().then(function(data) {
+                if (data && !data.isBasic) {
+                    console.log("SUPACO: Usando dados salvos do cache");
+                    // Substitui dados básicos pelos dados do cache
+                    AppCacheManager.updateInterface(data);
+                } else {
+                    console.log("SUPACO: Usando dados básicos");
+                }
+            });
+        } else if (typeof LocalStorageManager !== "undefined" && LocalStorageManager.hasValidData()) {
+            console.log("SUPACO: Usando dados do localStorage (legado)");
+            const availableData = LocalStorageManager.getAvailableData();
+            if (availableData && availableData.data) {
+                updatePageWithLocalStorageData(availableData.data);
+            }
+        }
+    </script>';
 }
 
 // Verificação adicional de autenticação

@@ -208,12 +208,14 @@ const AppCacheManager = (() => {
         return cachedData;
       }
       
-      // Se não há cache e está offline, retorna dados básicos
-      if (!isOnline) {
-        return getBasicAppData();
-      }
+      // Se não há cache, sempre retorna dados básicos
+      console.log('SUPACO: Nenhum cache encontrado, usando dados básicos');
+      const basicData = getBasicAppData();
       
-      return null;
+      // Salva dados básicos no cache para uso futuro
+      await saveAppData(basicData);
+      
+      return basicData;
     } catch (error) {
       console.error('SUPACO: Erro ao obter dados da aplicação:', error);
       return getBasicAppData();

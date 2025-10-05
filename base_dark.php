@@ -29,7 +29,7 @@
     
     <!-- Dashboard CSS -->
     <link href="assets/css/dashboard.css" rel="stylesheet">
-    
+
     <!-- Offline Indicator CSS -->
     <link href="assets/css/offline-indicator.css" rel="stylesheet">
     
@@ -39,9 +39,41 @@
     <!-- App Cache Manager -->
     <script src="assets/js/app-cache-manager.js"></script>
     
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('SUPACO: Service Worker registrado com sucesso');
+                        
+                        // Verifica se há atualizações
+                        registration.addEventListener('updatefound', function() {
+                            console.log('SUPACO: Nova versão do Service Worker encontrada');
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('SUPACO: Nova versão instalada, recarregando...');
+                                    window.location.reload();
+                                }
+                            });
+                        });
+                        
+                        // Força atualização se necessário
+                        registration.update();
+                    })
+                    .catch(function(error) {
+                        console.log('SUPACO: Falha no registro do Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+    
     <!-- Test Offline System (apenas em desenvolvimento) -->
     <?php if (isset($_GET['debug']) && $_GET['debug'] === '1'): ?>
     <script src="assets/js/test-offline-system.js"></script>
+    <script src="force-sw-update.js"></script>
     <?php endif; ?>
 
     <style>
@@ -1116,7 +1148,7 @@
             URL.revokeObjectURL(url);
         }
     </script>
-    
+
     <script>
         // Sistema de cache completo da aplicação
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1124,16 +1156,21 @@
             if (typeof AppCacheManager !== 'undefined') {
                 await AppCacheManager.init();
                 
-                // Carrega dados do cache
+                // Carrega dados do cache (sempre retorna dados, básicos ou salvos)
                 const cachedData = await AppCacheManager.getAppData();
                 if (cachedData) {
-                    console.log('SUPACO: Carregando dados do cache');
+                    console.log('SUPACO: Carregando dados do cache:', cachedData.isBasic ? 'básicos' : 'salvos');
                     AppCacheManager.updateInterface(cachedData);
                     
                     // Se está offline, mostra aviso discreto
                     if (!AppCacheManager.isOnline) {
                         showCacheWarning();
                     }
+                } else {
+                    console.log('SUPACO: Erro ao carregar dados do cache');
+                    // Força dados básicos como fallback
+                    const basicData = AppCacheManager.getBasicAppData();
+                    AppCacheManager.updateInterface(basicData);
                 }
             }
             
@@ -1255,7 +1292,7 @@
                 console.error('SUPACO: Erro ao atualizar página com dados do localStorage:', error);
             }
         }
-    </script>
+</script>
 
 </body>
 

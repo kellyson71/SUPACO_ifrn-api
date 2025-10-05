@@ -196,5 +196,6 @@ echo '<script>
     });
 </script>';
 
-header('Location: index.php?auth=success');
+// Sempre redireciona para index.php (sem parâmetros para evitar problemas offline)
+header('Location: index.php');
 exit;
