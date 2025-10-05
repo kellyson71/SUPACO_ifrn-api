@@ -13,8 +13,9 @@ if ($isLocalhost) {
     // Ambiente de desenvolvimento local
     define('REDIRECT_URI', 'http://localhost/SUAP/callback.php');
 } else {
-    // Ambiente de produção
-    define('REDIRECT_URI', 'https://suapaco.estagiopaudosferros.com/callback.php');
+    // Ambiente de produção - verificar se precisa de ajuste
+    $production_domain = 'suapaco.estagiopaudosferros.com';
+    define('REDIRECT_URI', 'https://' . $production_domain . '/callback.php');
 }
 
 // Configurações de depuração
@@ -25,3 +26,6 @@ error_reporting(E_ALL);
 // Log informativo do ambiente
 error_log("Ambiente detectado: " . ($isLocalhost ? "Local" : "Produção"));
 error_log("URI de redirecionamento: " . REDIRECT_URI);
+error_log("SERVER_NAME: " . $_SERVER['SERVER_NAME']);
+error_log("HTTP_HOST: " . $_SERVER['HTTP_HOST']);
+error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
