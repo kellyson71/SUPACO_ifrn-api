@@ -657,6 +657,37 @@ function ordenarAulasPorHorario($aulasAmanha)
 }
 
 /**
+ * Determina a imagem de status baseada no status de faltas
+ * 
+ * @param string $status Status da possibilidade de faltar ('success', 'warning', 'danger')
+ * @return array Array com informações da imagem
+ */
+function getStatusImage($status)
+{
+    switch ($status) {
+        case 'success':
+            return [
+                'imagem' => 'assets/images/tranquilo.png',
+                'alt' => 'Pode faltar tranquilo',
+                'classe' => 'status-image-success'
+            ];
+        case 'warning':
+            return [
+                'imagem' => 'assets/images/mais ou menos.png',
+                'alt' => 'Mais ou menos, fique atento',
+                'classe' => 'status-image-warning'
+            ];
+        case 'danger':
+        default:
+            return [
+                'imagem' => 'assets/images/perigo.png',
+                'alt' => 'Perigo! Evite faltar',
+                'classe' => 'status-image-danger'
+            ];
+    }
+}
+
+/**
  * Avalia se é seguro faltar à aula com base na frequência atual
  * 
  * Retorna um status que indica o risco de faltar:
@@ -796,45 +827,111 @@ $apiResponses = [
 
 $boletim = [];
 $horarios = [];
-$anoLetivo = date('Y');
-$periodoLetivo = '1';
+
+// Verificar se há parâmetros de semestre na URL
+$anoSelecionado = null;
+$periodoSelecionado = null;
+
+if (isset($_GET['periodo']) && strpos($_GET['periodo'], '.') !== false) {
+    $partes = explode('.', $_GET['periodo']);
+    if (count($partes) == 2) {
+        $anoSelecionado = (int)$partes[0];
+        $periodoSelecionado = (int)$partes[1];
+    }
+}
+
+// Função para detectar o período mais recente com dados
+function detectarPeriodoMaisRecente() {
+    $anoAtual = date('Y');
+    $mesAtual = date('n');
+    
+    // Se estamos no primeiro semestre (jan-jun), tentar ano atual.1, senão ano atual.2
+    $periodoAtual = ($mesAtual <= 6) ? 1 : 2;
+    
+    // Lista de períodos para tentar, do mais recente para o mais antigo
+    $periodosParaTentar = [];
+    
+    // Adicionar período atual
+    $periodosParaTentar[] = [$anoAtual, $periodoAtual];
+    
+    // Se estamos no primeiro semestre, adicionar segundo semestre do ano anterior
+    if ($periodoAtual == 1) {
+        $periodosParaTentar[] = [$anoAtual - 1, 2];
+    }
+    
+    // Adicionar anos anteriores
+    for ($i = 1; $i <= 3; $i++) {
+        $ano = $anoAtual - $i;
+        $periodosParaTentar[] = [$ano, 2];
+        $periodosParaTentar[] = [$ano, 1];
+    }
+    
+    return $periodosParaTentar;
+}
+
+// Função para carregar dados de um período específico
+function carregarDadosPeriodo($ano, $periodo) {
+    $boletim = getSuapData("minhas-informacoes/boletim/{$ano}/{$periodo}/");
+    $horarios = getSuapData("minhas-informacoes/turmas-virtuais/{$ano}/{$periodo}/");
+    
+    return [
+        'boletim' => is_array($boletim) ? $boletim : [],
+        'horarios' => is_array($horarios) ? sanitizarDadosAPI($horarios) : [],
+        'sucesso' => !empty($boletim) && is_array($boletim)
+    ];
+}
 
 if ($meusDados && isset($meusDados['matricula'])) {
-    // Detectar automaticamente o período adequado baseado na situação do aluno
-    $situacao = isset($meusDados['vinculo']['situacao']) ? $meusDados['vinculo']['situacao'] : '';
-
-    if ($situacao === 'Concluído' || $situacao === 'Desligado' || $situacao === 'Evadido') {
-        // Para alunos formados/desligados, buscar dados dos últimos anos
-        error_log("Aluno com situação '{$situacao}' - buscando dados históricos");
-
-        // Tentar anos anteriores (2024, 2023, 2022)
-        $anosParaTentar = [2024, 2023, 2022, 2021];
-        $periodosParaTentar = [2, 1]; // Primeiro semestre 2, depois 1
-
-        foreach ($anosParaTentar as $ano) {
-            foreach ($periodosParaTentar as $periodo) {
-                error_log("Tentando buscar dados para {$ano}.{$periodo}");
-
-                $boletimTeste = getSuapData("minhas-informacoes/boletim/{$ano}/{$periodo}/");
-                $horariosTeste = getSuapData("minhas-informacoes/turmas-virtuais/{$ano}/{$periodo}/");
-                if (is_array($boletimTeste) && !empty($boletimTeste)) {
-                    $boletim = $boletimTeste;
-                    $anoLetivo = $ano;
-                    $periodoLetivo = $periodo;
-                    error_log("Dados encontrados para {$ano}.{$periodo} - " . count($boletim) . " disciplinas");
-                    break 2; // Sai dos dois loops
-                }
+    $dadosCarregados = false;
+    $anoLetivo = null;
+    $periodoLetivo = null;
+    
+    // Se um período específico foi selecionado, tentar carregá-lo
+    if ($anoSelecionado && $periodoSelecionado) {
+        error_log("Tentando carregar período selecionado: {$anoSelecionado}.{$periodoSelecionado}");
+        $resultado = carregarDadosPeriodo($anoSelecionado, $periodoSelecionado);
+        
+        if ($resultado['sucesso']) {
+            $boletim = $resultado['boletim'];
+            $horarios = $resultado['horarios'];
+            $anoLetivo = $anoSelecionado;
+            $periodoLetivo = $periodoSelecionado;
+            $dadosCarregados = true;
+            error_log("Dados carregados com sucesso para {$anoLetivo}.{$periodoLetivo}");
+        } else {
+            error_log("Falha ao carregar período selecionado: {$anoSelecionado}.{$periodoSelecionado}");
+        }
+    }
+    
+    // Se não conseguiu carregar o período selecionado, detectar automaticamente o mais recente
+    if (!$dadosCarregados) {
+        error_log("Detectando período mais recente automaticamente");
+        $periodosParaTentar = detectarPeriodoMaisRecente();
+        
+        foreach ($periodosParaTentar as $periodo) {
+            $ano = $periodo[0];
+            $periodoNum = $periodo[1];
+            
+            error_log("Tentando carregar dados para {$ano}.{$periodoNum}");
+            $resultado = carregarDadosPeriodo($ano, $periodoNum);
+            
+            if ($resultado['sucesso']) {
+                $boletim = $resultado['boletim'];
+                $horarios = $resultado['horarios'];
+                $anoLetivo = $ano;
+                $periodoLetivo = $periodoNum;
+                $dadosCarregados = true;
+                error_log("Dados carregados para {$anoLetivo}.{$periodoLetivo} - " . count($boletim) . " disciplinas");
+                break;
             }
         }
-
-        // Se encontrou boletim, buscar horários correspondentes
-        if (!empty($boletim)) {
-            $horarios = getSuapData("minhas-informacoes/turmas-virtuais/{$anoLetivo}/{$periodoLetivo}/");
-        }
-    } else {
-        // Para alunos ativos, usar ano/período atual
-        $boletim = getSuapData("minhas-informacoes/boletim/{$anoLetivo}/{$periodoLetivo}/");
-        $horarios = getSuapData("minhas-informacoes/turmas-virtuais/{$anoLetivo}/{$periodoLetivo}/");
+    }
+    
+    // Se ainda não conseguiu carregar dados, usar valores padrão
+    if (!$dadosCarregados) {
+        $anoLetivo = date('Y');
+        $periodoLetivo = 1;
+        error_log("Nenhum período com dados encontrado, usando padrão: {$anoLetivo}.{$periodoLetivo}");
     }
 
     // Limpa e corrige os dados antes de armazenar
@@ -1510,6 +1607,38 @@ if (!empty($proximaAula['aulas'])) {
                         <h2>Boletim Acadêmico</h2>
                         <p>Sistema IF: MD = (2×N1 + 3×N2) ÷ 5</p>
                     </div>
+                </div>
+                
+                <div class="periodo-selector">
+                    <form method="GET" class="periodo-form">
+                        <label for="periodo-select">
+                            <i class="fas fa-calendar-alt"></i>
+                            Período:
+                        </label>
+                        <select name="periodo" id="periodo-select" onchange="this.form.submit()">
+                            <?php
+                            // Gerar opções de períodos (últimos 4 anos)
+                            $anoAtual = date('Y');
+                            $mesAtual = date('n');
+                            $periodoAtual = ($mesAtual <= 6) ? 1 : 2;
+                            
+                            for ($ano = $anoAtual; $ano >= $anoAtual - 3; $ano--) {
+                                for ($periodo = 2; $periodo >= 1; $periodo--) {
+                                    $valor = $ano . '.' . $periodo;
+                                    $texto = $ano . '.' . $periodo;
+                                    $selected = ($ano == $anoLetivo && $periodo == $periodoLetivo) ? 'selected' : '';
+                                    
+                                    // Marcar como "Atual" se for o período atual
+                                    if ($ano == $anoAtual && $periodo == $periodoAtual) {
+                                        $texto .= ' (Atual)';
+                                    }
+                                    
+                                    echo "<option value=\"{$valor}\" {$selected}>{$texto}</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+                    </form>
                 </div>
                 
                 <div class="boletim-info-list">

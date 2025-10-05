@@ -203,6 +203,147 @@
             background-color: var(--bg-zinc-600) !important;
             color: var(--text-white) !important;
         }
+
+        /* API Debug Modal Styles */
+        .api-data-container {
+            background-color: var(--bg-zinc-800);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 0.5rem;
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .api-data-content {
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .api-data-content pre {
+            margin: 0;
+            background: transparent;
+            color: var(--text-white);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .api-data-content .json-key {
+            color: #79C0FF;
+            font-weight: bold;
+        }
+
+        .api-data-content .json-string {
+            color: #A5D6FF;
+        }
+
+        .api-data-content .json-number {
+            color: #FFA657;
+        }
+
+        .api-data-content .json-boolean {
+            color: #FF7B72;
+        }
+
+        .api-data-content .json-null {
+            color: #8B949E;
+        }
+
+        .api-data-content .json-punctuation {
+            color: var(--text-zinc-400);
+        }
+
+        .api-tree-item {
+            margin-left: 1rem;
+            border-left: 1px solid var(--border-zinc-800);
+            padding-left: 0.5rem;
+        }
+
+        .api-tree-toggle {
+            cursor: pointer;
+            color: var(--blue-400);
+            user-select: none;
+        }
+
+        .api-tree-toggle:hover {
+            color: var(--blue-300);
+        }
+
+        .api-table {
+            width: 100%;
+            font-size: 0.875rem;
+        }
+
+        .api-table th {
+            background-color: var(--bg-zinc-700);
+            color: var(--text-white);
+            padding: 0.5rem;
+            border: 1px solid var(--border-zinc-800);
+        }
+
+        .api-table td {
+            padding: 0.5rem;
+            border: 1px solid var(--border-zinc-800);
+            color: var(--text-zinc-300);
+        }
+
+        .api-table tr:nth-child(even) {
+            background-color: rgba(39, 39, 42, 0.3);
+        }
+
+        /* API Calls Info Styles */
+        .api-calls-info {
+            background-color: var(--bg-zinc-800);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .api-calls-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .api-call-item {
+            background-color: var(--bg-zinc-700);
+            border: 1px solid var(--border-zinc-800);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .api-call-method {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .api-call-method code {
+            background-color: var(--bg-zinc-900);
+            color: var(--text-white);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            border: 1px solid var(--border-zinc-800);
+        }
+
+        .api-call-description {
+            margin-left: 0.25rem;
+        }
+
+        .badge.bg-success {
+            background-color: var(--emerald-500) !important;
+        }
+
+        .badge.bg-info {
+            background-color: var(--blue-400) !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #f59e0b !important;
+            color: #000 !important;
+        }
     </style>
 </head>
 
@@ -216,6 +357,9 @@
                     SUPACO
                 </a>
                 <div class="navbar-nav ms-auto">
+                    <button class="nav-link btn btn-link" onclick="abrirModalAPI()" style="border: none; background: none; color: inherit;">
+                        <i class="fas fa-code me-1"></i> Debug API
+                    </button>
                     <a class="nav-link" href="index.php">
                         <i class="fas fa-home me-1"></i> Dashboard
                     </a>
@@ -231,6 +375,142 @@
     <main>
         <?php if (isset($pageContent)) echo $pageContent; ?>
     </main>
+
+    <!-- Modal Debug API -->
+    <div class="modal fade" id="modalDebugAPI" tabindex="-1" aria-labelledby="modalDebugAPILabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="modalDebugAPILabel">
+                            <i class="fas fa-code me-2"></i>
+                            Debug API - Dados do SUAP
+                        </h5>
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Modal de transparência - Não guardamos nenhum dado seu, tudo está apenas em seu computador
+                        </small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <div class="btn-group" role="group" aria-label="Selecionar dados">
+                                    <input type="radio" class="btn-check" name="apiDataType" id="meusDados" value="meusDados" checked>
+                                    <label class="btn btn-outline-primary" for="meusDados">
+                                        <i class="fas fa-user me-1"></i> Meus Dados
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="apiDataType" id="boletim" value="boletim">
+                                    <label class="btn btn-outline-primary" for="boletim">
+                                        <i class="fas fa-chart-line me-1"></i> Boletim
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="apiDataType" id="horarios" value="horarios">
+                                    <label class="btn btn-outline-primary" for="horarios">
+                                        <i class="fas fa-clock me-1"></i> Horários
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="apiDataType" id="todos" value="todos">
+                                    <label class="btn btn-outline-primary" for="todos">
+                                        <i class="fas fa-list me-1"></i> Todos
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Formato de exibição:</span>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <input type="radio" class="btn-check" name="displayFormat" id="jsonFormat" value="json" checked>
+                                        <label class="btn btn-outline-secondary" for="jsonFormat">JSON</label>
+
+                                        <input type="radio" class="btn-check" name="displayFormat" id="tableFormat" value="table">
+                                        <label class="btn btn-outline-secondary" for="tableFormat">Tabela</label>
+
+                                        <input type="radio" class="btn-check" name="displayFormat" id="treeFormat" value="tree">
+                                        <label class="btn btn-outline-secondary" for="treeFormat">Árvore</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="api-calls-info">
+                                    <h6 class="text-primary mb-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Chamadas da API Realizadas:
+                                    </h6>
+                                    <div class="api-calls-list">
+                                        <div class="api-call-item">
+                                            <div class="api-call-method">
+                                                <span class="badge bg-success">GET</span>
+                                                <code><?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/meus-dados/</code>
+                                            </div>
+                                            <div class="api-call-description">
+                                                <small class="text-muted">Dados pessoais e acadêmicos do usuário</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="api-call-item">
+                                            <div class="api-call-method">
+                                                <span class="badge bg-info">GET</span>
+                                                <code><?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/boletim/<?php echo $anoLetivo; ?>/<?php echo $periodoLetivo; ?>/</code>
+                                            </div>
+                                            <div class="api-call-description">
+                                                <small class="text-muted">Boletim acadêmico do período <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?></small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="api-call-item">
+                                            <div class="api-call-method">
+                                                <span class="badge bg-warning">GET</span>
+                                                <code><?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/turmas-virtuais/<?php echo $anoLetivo; ?>/<?php echo $periodoLetivo; ?>/</code>
+                                            </div>
+                                            <div class="api-call-description">
+                                                <small class="text-muted">Horários e turmas do período <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="api-data-container">
+                                <div id="apiDataContent" class="api-data-content">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                        <p>Carregando dados da API...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="me-auto">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Dados carregados diretamente do SUAP via API oficial
+                        </small>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="copiarDados()">
+                        <i class="fas fa-copy me-1"></i> Copiar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="downloadDados()">
+                        <i class="fas fa-download me-1"></i> Download
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -460,6 +740,284 @@
                 detailsElement.style.display = 'none';
                 button.innerHTML = '<i class="fas fa-info-circle"></i><span>Detalhes</span>';
             }
+        }
+
+        // Dados da API para debug
+        const apiDebugData = <?php
+            if (isset($apiResponses)) {
+                echo json_encode($apiResponses, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            } else {
+                echo '{}';
+            }
+        ?>;
+
+        // Informações das chamadas da API
+        const apiCallsInfo = {
+            meusDados: {
+                method: 'GET',
+                endpoint: '<?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/meus-dados/',
+                description: 'Dados pessoais e acadêmicos do usuário',
+                headers: {
+                    'Authorization': 'Bearer [TOKEN_OCULTO]',
+                    'Content-Type': 'application/json'
+                },
+                parameters: {}
+            },
+            boletim: {
+                method: 'GET',
+                endpoint: '<?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/boletim/<?php echo $anoLetivo; ?>/<?php echo $periodoLetivo; ?>/',
+                description: 'Boletim acadêmico do período <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>',
+                headers: {
+                    'Authorization': 'Bearer [TOKEN_OCULTO]',
+                    'Content-Type': 'application/json'
+                },
+                parameters: {
+                    'ano': '<?php echo $anoLetivo; ?>',
+                    'periodo': '<?php echo $periodoLetivo; ?>'
+                }
+            },
+            horarios: {
+                method: 'GET',
+                endpoint: '<?php echo SUAP_URL; ?>/api/v2/minhas-informacoes/turmas-virtuais/<?php echo $anoLetivo; ?>/<?php echo $periodoLetivo; ?>/',
+                description: 'Horários e turmas do período <?php echo $anoLetivo; ?>.<?php echo $periodoLetivo; ?>',
+                headers: {
+                    'Authorization': 'Bearer [TOKEN_OCULTO]',
+                    'Content-Type': 'application/json'
+                },
+                parameters: {
+                    'ano': '<?php echo $anoLetivo; ?>',
+                    'periodo': '<?php echo $periodoLetivo; ?>'
+                }
+            }
+        };
+
+        // Função para abrir o modal de debug da API
+        function abrirModalAPI() {
+            const modal = new bootstrap.Modal(document.getElementById('modalDebugAPI'));
+            modal.show();
+            
+            // Carrega os dados iniciais
+            carregarDadosAPI();
+            
+            // Adiciona event listeners para mudanças
+            document.querySelectorAll('input[name="apiDataType"]').forEach(input => {
+                input.addEventListener('change', carregarDadosAPI);
+            });
+            
+            document.querySelectorAll('input[name="displayFormat"]').forEach(input => {
+                input.addEventListener('change', carregarDadosAPI);
+            });
+        }
+
+        // Função para carregar e exibir os dados da API
+        function carregarDadosAPI() {
+            const dataType = document.querySelector('input[name="apiDataType"]:checked').value;
+            const displayFormat = document.querySelector('input[name="displayFormat"]:checked').value;
+            const contentDiv = document.getElementById('apiDataContent');
+            
+            let dataToShow = {};
+            
+            if (dataType === 'todos') {
+                dataToShow = apiDebugData;
+            } else if (apiDebugData[dataType]) {
+                dataToShow = apiDebugData[dataType];
+            } else {
+                dataToShow = { erro: 'Dados não encontrados para este tipo' };
+            }
+            
+            // Adiciona informações da chamada da API se disponível
+            if (dataType !== 'todos' && apiCallsInfo[dataType]) {
+                const callInfo = apiCallsInfo[dataType];
+                dataToShow = {
+                    '_api_call_info': {
+                        method: callInfo.method,
+                        endpoint: callInfo.endpoint,
+                        description: callInfo.description,
+                        headers: callInfo.headers,
+                        parameters: callInfo.parameters,
+                        timestamp: new Date().toISOString()
+                    },
+                    ...dataToShow
+                };
+            }
+            
+            switch (displayFormat) {
+                case 'json':
+                    contentDiv.innerHTML = formatarJSON(dataToShow);
+                    break;
+                case 'table':
+                    contentDiv.innerHTML = formatarTabela(dataToShow);
+                    break;
+                case 'tree':
+                    contentDiv.innerHTML = formatarArvore(dataToShow);
+                    break;
+            }
+        }
+
+        // Função para formatar JSON com syntax highlighting
+        function formatarJSON(obj) {
+            const jsonString = JSON.stringify(obj, null, 2);
+            const highlighted = syntaxHighlight(jsonString);
+            return `<pre>${highlighted}</pre>`;
+        }
+
+        // Função para syntax highlighting do JSON
+        function syntaxHighlight(json) {
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            }).replace(/([{}[\]])/g, '<span class="json-punctuation">$1</span>');
+        }
+
+        // Função para formatar como tabela
+        function formatarTabela(obj) {
+            if (typeof obj !== 'object' || obj === null) {
+                return `<p>Dados não podem ser exibidos em formato de tabela</p>`;
+            }
+            
+            let html = '<table class="api-table"><thead><tr><th>Chave</th><th>Valor</th><th>Tipo</th></tr></thead><tbody>';
+            
+            function processarObjeto(obj, prefix = '') {
+                for (const [key, value] of Object.entries(obj)) {
+                    const fullKey = prefix ? `${prefix}.${key}` : key;
+                    let displayValue = value;
+                    let valueType = typeof value;
+                    
+                    if (value === null) {
+                        displayValue = 'null';
+                        valueType = 'null';
+                    } else if (Array.isArray(value)) {
+                        displayValue = `Array(${value.length})`;
+                        valueType = 'array';
+                    } else if (typeof value === 'object') {
+                        displayValue = 'Object';
+                        valueType = 'object';
+                    } else if (typeof value === 'string' && value.length > 100) {
+                        displayValue = value.substring(0, 100) + '...';
+                    }
+                    
+                    html += `<tr><td>${fullKey}</td><td>${displayValue}</td><td>${valueType}</td></tr>`;
+                    
+                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        processarObjeto(value, fullKey);
+                    }
+                }
+            }
+            
+            processarObjeto(obj);
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Função para formatar como árvore
+        function formatarArvore(obj, level = 0) {
+            if (typeof obj !== 'object' || obj === null) {
+                return `<span class="json-${typeof obj}">${obj}</span>`;
+            }
+            
+            let html = '';
+            const entries = Object.entries(obj);
+            
+            entries.forEach(([key, value], index) => {
+                const isLast = index === entries.length - 1;
+                const indent = '  '.repeat(level);
+                
+                html += `<div class="api-tree-item" style="margin-left: ${level * 20}px;">`;
+                html += `<span class="api-tree-toggle" onclick="toggleTreeItem(this)">`;
+                html += `<i class="fas fa-chevron-right"></i> `;
+                html += `<span class="json-key">"${key}"</span>: `;
+                html += `</span>`;
+                
+                if (typeof value === 'object' && value !== null) {
+                    html += `<div class="tree-content" style="display: none;">`;
+                    html += formatarArvore(value, level + 1);
+                    html += `</div>`;
+                } else {
+                    html += `<span class="json-${typeof value}">${JSON.stringify(value)}</span>`;
+                }
+                
+                html += `</div>`;
+            });
+            
+            return html;
+        }
+
+        // Função para alternar itens da árvore
+        function toggleTreeItem(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
+        }
+
+        // Função para copiar dados
+        function copiarDados() {
+            const dataType = document.querySelector('input[name="apiDataType"]:checked').value;
+            let dataToCopy = {};
+            
+            if (dataType === 'todos') {
+                dataToCopy = apiDebugData;
+            } else if (apiDebugData[dataType]) {
+                dataToCopy = apiDebugData[dataType];
+            }
+            
+            navigator.clipboard.writeText(JSON.stringify(dataToCopy, null, 2)).then(() => {
+                // Feedback visual
+                const button = event.target.closest('button');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check me-1"></i> Copiado!';
+                button.classList.add('btn-success');
+                button.classList.remove('btn-secondary');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-secondary');
+                }, 2000);
+            });
+        }
+
+        // Função para download dos dados
+        function downloadDados() {
+            const dataType = document.querySelector('input[name="apiDataType"]:checked').value;
+            let dataToDownload = {};
+            
+            if (dataType === 'todos') {
+                dataToDownload = apiDebugData;
+            } else if (apiDebugData[dataType]) {
+                dataToDownload = apiDebugData[dataType];
+            }
+            
+            const dataStr = JSON.stringify(dataToDownload, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `suap-api-${dataType}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     </script>
 

@@ -55,6 +55,68 @@
   font-weight: 500;
 }
 
+/* Seletor de período */
+.periodo-selector {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(39, 39, 42, 0.6);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-zinc-700);
+}
+
+.periodo-form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.periodo-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.periodo-form label i {
+  color: var(--blue-400);
+  font-size: 1rem;
+}
+
+#periodo-select {
+  padding: 0.75rem 1rem;
+  background: rgba(26, 29, 36, 0.8);
+  border: 1px solid var(--border-zinc-600);
+  border-radius: 0.5rem;
+  color: var(--text-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 150px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#periodo-select:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: rgba(26, 29, 36, 0.9);
+}
+
+#periodo-select:hover {
+  border-color: var(--border-zinc-500);
+  background: rgba(26, 29, 36, 0.9);
+}
+
+#periodo-select option {
+  background: rgba(26, 29, 36, 0.95);
+  color: var(--text-white);
+  padding: 0.5rem;
+}
+
 /* Lista de informações do sistema */
 .boletim-info-list {
   display: flex;
@@ -495,6 +557,26 @@
     justify-content: center;
     text-align: center;
     margin-bottom: 1.5rem;
+  }
+  
+  .periodo-selector {
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+  }
+  
+  .periodo-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .periodo-form label {
+    justify-content: center;
+  }
+  
+  #periodo-select {
+    min-width: auto;
+    width: 100%;
   }
   
   .boletim-info-list {
