@@ -95,6 +95,9 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             z-index: 10;
             min-height: 100vh;
             padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         /* Seção de apresentação */
@@ -142,6 +145,9 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             gap: 0.75rem;
             transition: all 0.3s ease;
             cursor: pointer;
+            min-height: 56px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .login-btn {
@@ -199,6 +205,7 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             gap: 1.5rem;
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 1rem;
         }
 
         .feature-card {
@@ -302,6 +309,15 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             font-size: 1.5rem;
             cursor: pointer;
             transition: color 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .modal-close:hover {
@@ -333,6 +349,10 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             color: var(--text-white);
             font-size: 1rem;
             transition: all 0.3s ease;
+            min-height: 48px;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .form-control:focus {
@@ -357,6 +377,9 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
+            min-height: 56px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .calculate-btn:hover {
@@ -515,45 +538,362 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
             color: var(--purple-400);
         }
 
-        /* Responsividade */
+        /* Mobile-First Responsividade */
         @media (max-width: 768px) {
             .main-container {
-                padding: 1rem;
+                padding: 1rem 0.75rem;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .presentation-section {
+                margin-bottom: 2rem;
+                padding: 0 0.5rem;
             }
 
             .brand-title {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
+                line-height: 1.2;
+                margin-bottom: 0.75rem;
+            }
+
+            .brand-subtitle {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+                line-height: 1.4;
             }
 
             .action-buttons {
                 flex-direction: column;
-                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 2rem;
+                padding: 0 0.5rem;
             }
 
             .action-btn {
                 width: 100%;
-                max-width: 300px;
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+                min-height: 56px;
+                touch-action: manipulation;
             }
 
             .floating-header {
-                top: 1rem;
-                right: 1rem;
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
+                top: 0.75rem;
+                right: 0.75rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+                border-radius: 25px;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 0.75rem;
+                margin: 0 0.5rem;
             }
 
             .feature-card {
                 padding: 1rem;
+                border-radius: 0.75rem;
+            }
+
+            .feature-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0.75rem;
+            }
+
+            .feature-title {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .feature-description {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+
+            .modal-overlay {
+                padding: 1rem 0.5rem;
+                align-items: flex-start;
+                padding-top: 2rem;
             }
 
             .modal-content {
-                padding: 1.5rem;
-                margin: 1rem;
+                padding: 1.5rem 1rem;
+                margin: 0;
+                max-width: 100%;
+                border-radius: 1rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .form-control {
+                padding: 0.875rem 1rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+            }
+
+            .calculate-btn {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+                min-height: 56px;
+            }
+
+            .calculator-result {
+                padding: 1rem;
+                border-radius: 0.75rem;
+            }
+
+            .result-item {
+                padding: 0.5rem 0;
+                font-size: 0.9rem;
+            }
+
+            .dev-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+                border-radius: 25px;
+            }
+
+            .main-footer {
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+                font-size: 0.85rem;
+            }
+
+            .memes-carousel-container {
+                opacity: 0.25;
+            }
+
+            .main-container:hover .memes-carousel-container {
+                opacity: 0.08;
+            }
+
+            .memes-slide {
+                padding: 1rem;
+            }
+
+            .memes-track {
+                animation-duration: 45s;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .action-btn {
+                padding: 0.875rem 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            .feature-card {
+                padding: 0.875rem;
+            }
+
+            .modal-content {
+                padding: 1.25rem 0.875rem;
+            }
+
+            .floating-header {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .version-badge, .beta-badge {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .brand-title {
+                font-size: 1.6rem;
+            }
+
+            .action-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .feature-card {
+                padding: 0.75rem;
+            }
+
+            .modal-content {
+                padding: 1rem 0.75rem;
+            }
+
+            .memes-carousel-container {
+                opacity: 0.2;
+            }
+
+            .main-container:hover .memes-carousel-container {
+                opacity: 0.06;
+            }
+
+            .memes-slide {
+                padding: 0.75rem;
+            }
+
+            .memes-track {
+                animation-duration: 40s;
+            }
+        }
+
+        /* Carrossel de Memes */
+        .memes-carousel-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            opacity: 0.35;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .memes-carousel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+        }
+
+        .main-container:hover .memes-carousel-container {
+            opacity: 0.1;
+        }
+
+        .memes-carousel-container:hover {
+            opacity: 0.7;
+        }
+
+        .memes-carousel-container:hover .memes-track {
+            animation-play-state: paused;
+        }
+
+        .memes-track {
+            display: flex;
+            width: 200%;
+            height: 100%;
+            animation: memesSlide 60s linear infinite;
+        }
+
+        .memes-slide {
+            flex: 0 0 20%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .meme-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 1rem;
+            filter: grayscale(60%) brightness(0.9) contrast(1.1);
+            transition: filter 0.4s ease;
+        }
+
+        .memes-carousel-container:hover .meme-image {
+            filter: grayscale(100%) brightness(0.7) contrast(1.2);
+        }
+
+        .memes-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 40%,
+                rgba(0, 0, 0, 0.3) 70%,
+                var(--bg-black) 90%
+            );
+            pointer-events: none;
+            transition: background 0.4s ease;
+        }
+
+        .memes-carousel-container:hover .memes-overlay {
+            background: radial-gradient(
+                ellipse at center,
+                transparent 30%,
+                rgba(0, 0, 0, 0.5) 60%,
+                var(--bg-black) 85%
+            );
+        }
+
+        .memes-carousel-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                transparent 0%,
+                transparent 30%,
+                rgba(0, 0, 0, 0.2) 60%,
+                rgba(0, 0, 0, 0.7) 100%
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+        }
+
+        .memes-carousel-container:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover,
+        .action-btn:hover,
+        .presentation-section:hover,
+        .action-buttons:hover,
+        .features-grid:hover {
+            position: relative;
+            z-index: 10;
+        }
+
+
+        @keyframes memesSlide {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
             }
         }
 
@@ -610,6 +950,46 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
 
         <!-- Container Principal -->
         <div class="main-container">
+            <!-- Carrossel de Memes -->
+            <div class="memes-carousel-container">
+                <div class="memes-carousel">
+                    <div class="memes-track">
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image.png" alt="Meme 1" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy.png" alt="Meme 2" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 2.png" alt="Meme 3" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 3.png" alt="Meme 4" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 4.png" alt="Meme 5" class="meme-image">
+                        </div>
+                        <!-- Duplicar slides para loop infinito -->
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image.png" alt="Meme 1" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy.png" alt="Meme 2" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 2.png" alt="Meme 3" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 3.png" alt="Meme 4" class="meme-image">
+                        </div>
+                        <div class="memes-slide">
+                            <img src="assets/images/memes/image copy 4.png" alt="Meme 5" class="meme-image">
+                        </div>
+                    </div>
+                </div>
+                <div class="memes-overlay"></div>
+            </div>
+
             <!-- Seção de Apresentação -->
             <div class="presentation-section slide-in-up">
                 <div class="brand-header">
@@ -743,6 +1123,31 @@ $auth_url = SUAP_URL . "/o/authorize/?" . http_build_query([
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Rastrear posição do mouse para o efeito de clareador
+        let mouseTracker = null;
+        
+        function updateMousePosition(e) {
+            const carouselContainer = document.querySelector('.memes-carousel-container');
+            if (carouselContainer) {
+                const rect = carouselContainer.getBoundingClientRect();
+                const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+                
+                carouselContainer.style.setProperty('--mouse-x', x + '%');
+                carouselContainer.style.setProperty('--mouse-y', y + '%');
+            }
+        }
+        
+        // Usar requestAnimationFrame para melhor performance
+        document.addEventListener('mousemove', function(e) {
+            if (mouseTracker) {
+                cancelAnimationFrame(mouseTracker);
+            }
+            mouseTracker = requestAnimationFrame(() => updateMousePosition(e));
+        });
+    </script>
     
     <script>
         // Função para abrir a calculadora
