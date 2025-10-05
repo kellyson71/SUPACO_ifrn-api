@@ -657,33 +657,18 @@ function ordenarAulasPorHorario($aulasAmanha)
 }
 
 /**
- * Determina a imagem de status baseada no status de faltas
- * 
- * @param string $status Status da possibilidade de faltar ('success', 'warning', 'danger')
- * @return array Array com informações da imagem
+ * Retorna o caminho da imagem baseado no status
  */
 function getStatusImage($status)
 {
     switch ($status) {
         case 'success':
-            return [
-                'imagem' => 'assets/images/tranquilo.png',
-                'alt' => 'Pode faltar tranquilo',
-                'classe' => 'status-image-success'
-            ];
+            return 'assets/images/tranquilo.png';
         case 'warning':
-            return [
-                'imagem' => 'assets/images/mais ou menos.png',
-                'alt' => 'Mais ou menos, fique atento',
-                'classe' => 'status-image-warning'
-            ];
+            return 'assets/images/mais ou menos.png';
         case 'danger':
         default:
-            return [
-                'imagem' => 'assets/images/perigo.png',
-                'alt' => 'Perigo! Evite faltar',
-                'classe' => 'status-image-danger'
-            ];
+            return 'assets/images/perigo.png';
     }
 }
 
@@ -1236,21 +1221,31 @@ if (!empty($proximaAula['aulas'])) {
                     <?php endif; ?>
                 </div>
 
-                <h2 class="status-title <?php echo $podeFaltarProximaAula ? 'text-emerald-400' : 'text-red-400'; ?>">
-                    <?php echo $podeFaltarProximaAula ? 'PODE FALTAR' : 'CUIDADO!'; ?>
-                </h2>
+                <div class="status-text-wrapper">
+                    <h2 class="status-title <?php echo $podeFaltarProximaAula ? 'text-emerald-400' : 'text-red-400'; ?>">
+                        <?php echo $podeFaltarProximaAula ? 'PODE FALTAR' : 'CUIDADO!'; ?>
+                    </h2>
 
-                <p class="status-description">
-                    <?php
-                    if ($proximaAula['tipo'] === 'nenhuma') {
-                        echo 'Nenhuma aula próxima encontrada.';
-                    } else {
-                        echo $podeFaltarProximaAula
-                            ? 'Sua frequência permite faltar na próxima aula.'
-                            : 'Evite faltar - você está próximo do limite de faltas.';
-                    }
+                    <p class="status-description">
+                        <?php
+                        if ($proximaAula['tipo'] === 'nenhuma') {
+                            echo 'Nenhuma aula próxima encontrada.';
+                        } else {
+                            echo $podeFaltarProximaAula
+                                ? 'Sua frequência permite faltar na próxima aula.'
+                                : 'Evite faltar - você está próximo do limite de faltas.';
+                        }
+                        ?>
+                    </p>
+                </div>
+
+                <div class="status-image-wrapper">
+                    <?php 
+                    $statusGeral = $podeFaltarProximaAula ? 'success' : 'danger';
+                    $imagem = getStatusImage($statusGeral);
                     ?>
-                </p>
+                    <img src="<?php echo $imagem; ?>" class="status-image" style="width: 240px; height: 240px; border-radius: 12px;">
+                </div>
 
                 <?php if ($proximaAula['tipo'] !== 'nenhuma'): ?>
                     <div class="next-class-info">

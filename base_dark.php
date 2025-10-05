@@ -344,11 +344,78 @@
             background-color: #f59e0b !important;
             color: #000 !important;
         }
+
+        /* Estilos do menu hambúrguer */
+        .navbar-toggler {
+            border: 2px solid var(--text-zinc-300);
+            border-radius: 8px;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggler:hover {
+            border-color: var(--blue-400);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .navbar-collapse {
+            background-color: rgba(26, 29, 36, 0.95);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-zinc-700);
+        }
+
+        .navbar-nav .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .navbar-nav .nav-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .navbar-nav .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            color: var(--text-zinc-300);
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--blue-400);
+        }
+
+        @media (min-width: 992px) {
+            .navbar-collapse {
+                background-color: transparent;
+                border: none;
+                margin-top: 0;
+                padding: 0;
+                backdrop-filter: none;
+            }
+            
+            .navbar-nav .nav-item {
+                margin-bottom: 0;
+                margin-left: 0.5rem;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Navbar simples (opcional) -->
+    <!-- Navbar com menu hambúrguer -->
     <?php if (isset($_SESSION['access_token'])): ?>
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container">
@@ -356,16 +423,31 @@
                     <i class="fas fa-graduation-cap me-2"></i>
                     SUPACO
                 </a>
-                <div class="navbar-nav ms-auto">
-                    <button class="nav-link btn btn-link" onclick="abrirModalAPI()" style="border: none; background: none; color: inherit;">
-                        <i class="fas fa-code me-1"></i> Debug API
-                    </button>
-                    <a class="nav-link" href="index.php">
-                        <i class="fas fa-home me-1"></i> Dashboard
-                    </a>
-                    <a class="nav-link" href="logout.php">
-                        <i class="fas fa-sign-out-alt me-1"></i> Sair
-                    </a>
+                
+                <!-- Botão do menu hambúrguer -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Menu colapsável -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <button class="nav-link btn btn-link" onclick="abrirModalAPI()" style="border: none; background: none; color: inherit;">
+                                <i class="fas fa-code me-1"></i> Debug API
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">
+                                <i class="fas fa-home me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php">
+                                <i class="fas fa-sign-out-alt me-1"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>

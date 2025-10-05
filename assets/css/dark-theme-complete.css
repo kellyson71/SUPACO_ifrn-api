@@ -197,6 +197,29 @@ body {
   background-color: rgba(239, 68, 68, 0.1);
 }
 
+.status-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.status-text-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+.status-image {
+  width: 240px !important;
+  height: 240px !important;
+  border-radius: 12px;
+}
+
 .status-content h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -816,6 +839,30 @@ body {
 
   .main-status-card {
     padding: 1.5rem;
+  }
+  
+  .status-content {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .status-text-wrapper {
+    min-width: auto;
+    order: 1;
+  }
+  
+  .status-icon-wrapper {
+    order: 2;
+  }
+  
+  .status-image-wrapper {
+    order: 3;
+  }
+  
+  .status-image {
+    width: 200px !important;
+    height: 200px !important;
   }
 
   .grid {
