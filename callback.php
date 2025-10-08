@@ -156,6 +156,105 @@ if ($user_data && isset($user_data['id'])) {
     ];
 
     error_log("Informações do usuário salvas com sucesso. Variáveis de sessão: " . print_r($session_vars, true));
+    
+    $mobile_id = isset($_GET['state']) ? $_GET['state'] : null;
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    $is_mobile = (strpos($user_agent, 'Expo') !== false || $mobile_id !== null);
+    
+    if ($is_mobile && $mobile_id) {
+        error_log("MOBILE: Requisição detectada via state parameter");
+        error_log("MOBILE: mobile_id (state) = " . $mobile_id);
+        
+        $temp_file = sys_get_temp_dir() . '/supaco_mobile_' . $mobile_id . '.json';
+        
+        $mobile_data = [
+            'success' => true,
+            'access_token' => $token_data['access_token'],
+            'refresh_token' => isset($token_data['refresh_token']) ? $token_data['refresh_token'] : null,
+            'expires_in' => $expires_in,
+            'token_type' => 'Bearer',
+            'user_data' => $user_data,
+            'timestamp' => time()
+        ];
+        
+        file_put_contents($temp_file, json_encode($mobile_data));
+        error_log("MOBILE: Dados salvos em: " . $temp_file);
+        error_log("MOBILE: mobile_id = " . $mobile_id);
+        
+        echo '<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Autenticação Concluída</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .container {
+                    background: white;
+                    padding: 40px;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    text-align: center;
+                    max-width: 400px;
+                }
+                .success-icon {
+                    font-size: 64px;
+                    margin-bottom: 20px;
+                    animation: bounce 1s infinite;
+                }
+                @keyframes bounce {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+                h1 {
+                    color: #10b981;
+                    margin: 0 0 10px 0;
+                    font-size: 28px;
+                }
+                p {
+                    color: #666;
+                    margin: 10px 0;
+                    font-size: 18px;
+                }
+                .code {
+                    background: #f3f4f6;
+                    padding: 15px;
+                    border-radius: 10px;
+                    font-family: monospace;
+                    font-size: 12px;
+                    margin: 20px 0;
+                    word-break: break-all;
+                    color: #3b82f6;
+                    font-weight: bold;
+                }
+                .info {
+                    font-size: 14px;
+                    color: #999;
+                    margin-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="success-icon">✅</div>
+                <h1>Autenticação Concluída!</h1>
+                <p><strong>Volte para o aplicativo SUPACO</strong></p>
+                <div class="code">ID: ' . $mobile_id . '</div>
+                <p class="info">Aguarde... O app está buscando seus dados.</p>
+                <p class="info" style="margin-top: 30px;">Pode fechar esta janela</p>
+            </div>
+        </body>
+        </html>';
+        exit;
+    }
 } else {
     // Log detalhado do erro
     error_log("Falha ao obter informações do usuário. Resposta HTTP: " . $httpcode);
@@ -165,107 +264,7 @@ if ($user_data && isset($user_data['id'])) {
     // Se não conseguirmos obter as informações do usuário, limpar a sessão
     session_unset();
     session_destroy();
-    
-    if (isset($_GET['mobile']) && $_GET['mobile'] === 'true') {
-        header('Content-Type: application/json');
-        http_response_code(400);
-        echo json_encode([
-            'success' => false,
-            'error' => 'usuario_nao_encontrado',
-            'message' => 'Falha ao obter informações do usuário'
-        ]);
-        exit;
-    }
-    
     header('Location: login.php?erro=usuario_nao_encontrado');
-    exit;
-}
-
-if (isset($_GET['mobile']) && $_GET['mobile'] === 'true') {
-    error_log("Requisição mobile detectada - salvando em arquivo temporário");
-    
-    $mobile_id = uniqid('mobile_', true);
-    $temp_file = sys_get_temp_dir() . '/supaco_mobile_' . $mobile_id . '.json';
-    
-    $mobile_data = [
-        'success' => true,
-        'access_token' => $token_data['access_token'],
-        'refresh_token' => isset($token_data['refresh_token']) ? $token_data['refresh_token'] : null,
-        'expires_in' => $expires_in,
-        'token_type' => 'Bearer',
-        'user_data' => $user_data,
-        'timestamp' => time()
-    ];
-    
-    file_put_contents($temp_file, json_encode($mobile_data));
-    error_log("Dados salvos em arquivo temporário: " . $temp_file);
-    
-    echo '<!DOCTYPE html>
-    <html>
-    <head>
-        <title>Autenticação Concluída</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body {
-                font-family: system-ui, -apple-system, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                margin: 0;
-                padding: 20px;
-            }
-            .container {
-                background: white;
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                text-align: center;
-                max-width: 400px;
-            }
-            .success-icon {
-                font-size: 64px;
-                margin-bottom: 20px;
-            }
-            h1 {
-                color: #10b981;
-                margin: 0 0 10px 0;
-                font-size: 24px;
-            }
-            p {
-                color: #666;
-                margin: 10px 0;
-                font-size: 16px;
-            }
-            .code {
-                background: #f3f4f6;
-                padding: 15px;
-                border-radius: 10px;
-                font-family: monospace;
-                font-size: 14px;
-                margin: 20px 0;
-                word-break: break-all;
-                color: #3b82f6;
-                font-weight: bold;
-            }
-            .info {
-                font-size: 14px;
-                color: #999;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="success-icon">✅</div>
-            <h1>Autenticação Concluída!</h1>
-            <p>Volte para o aplicativo SUPACO</p>
-            <div class="code">' . $mobile_id . '</div>
-            <p class="info">Você pode fechar esta janela</p>
-        </div>
-    </body>
-    </html>';
     exit;
 }
 
