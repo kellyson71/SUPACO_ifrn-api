@@ -29,12 +29,42 @@
     <!-- Toastify para notificações elegantes -->
     <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
     <!-- Chart.js para gráficos interativos -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/Chart.min.css"> <!-- Custom Styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/Chart.min.css">     <!-- Custom Styles -->
     <link href="assets/css/day-selector.css" rel="stylesheet">
     <link href="assets/css/dashboard.css" rel="stylesheet">
     <link href="assets/css/status-style.css" rel="stylesheet">
     <!-- Offline Visual Styles -->
     <link href="assets/css/offline-styles.css" rel="stylesheet">
+    
+    <style>
+        /* Navbar styles */
+        .navbar-nav .nav-link {
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            color: white !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            color: #60a5fa !important;
+        }
+
+        .navbar-nav .nav-link.active-page {
+            color: #60a5fa !important;
+            background-color: rgba(96, 165, 250, 0.1);
+            border-radius: 0.375rem;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            margin-right: 10px;
+        }
+    </style>
     <style>
         /* Ajustes para espaçamento do banner offline */
         body.has-offline-banner {
@@ -99,6 +129,11 @@
                             <i class="fab fa-google me-1"></i> Classroom
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'atualizacoes.php' ? 'active-page' : ''; ?>" href="atualizacoes.php">
+                            <i class="fas fa-rocket me-1"></i> Atualizações
+                        </a>
+                    </li>
                 </ul>
 
                 <?php if (isset($_SESSION['access_token'])): ?>
@@ -116,9 +151,11 @@
                 <?php if (isset($_SESSION['access_token']) && isset($meusDados)): ?>
                     <div class="dropdown">
                         <a class="nav-link user-nav-item" href="#" role="button" data-bs-toggle="dropdown">
-                            <?php if (isset($meusDados['url_foto_150x200'])): ?>
+                            <?php if (isset($meusDados['url_foto_150x200']) && !empty($meusDados['url_foto_150x200'])): ?>
                                 <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>"
-                                    class="user-avatar" alt="Foto do usuário">
+                                    class="user-avatar" alt="Foto do usuário" 
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <i class="fas fa-user-circle user-avatar d-flex align-items-center justify-content-center bg-light text-primary" style="display: none;"></i>
                             <?php else: ?>
                                 <i class="fas fa-user-circle user-avatar d-flex align-items-center justify-content-center bg-light text-primary"></i>
                             <?php endif; ?>

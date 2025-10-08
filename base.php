@@ -156,6 +156,22 @@
             color: var(--blue-400) !important;
         }
 
+        .navbar-nav .nav-link {
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+        }
+
+        .navbar-nav .nav-link.active-page {
+            color: var(--blue-400) !important;
+            background-color: rgba(96, 165, 250, 0.1);
+            border-radius: 0.375rem;
+        }
+
         /* Modal dark theme */
         .modal-content {
             background-color: var(--bg-zinc-900) !important;
@@ -1043,6 +1059,11 @@
                                 <i class="fab fa-google me-1"></i> Classroom
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'atualizacoes.php' ? 'active-page' : ''; ?>" href="atualizacoes.php">
+                                <i class="fas fa-rocket me-1"></i> Atualizações
+                            </a>
+                        </li>
                     </ul>
 
                     <?php if (isset($_SESSION['access_token'])): ?>
@@ -1055,12 +1076,14 @@
                     <?php if (isset($_SESSION['access_token']) && isset($meusDados)): ?>
                         <div class="dropdown">
                             <a class="nav-link user-nav-item" href="#" role="button" data-bs-toggle="dropdown">
-                                <?php if (isset($meusDados['url_foto_150x200'])): ?>
-                                    <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>"
-                                        class="user-avatar" alt="Foto do usuário">
-                                <?php else: ?>
-                                    <i class="fas fa-user-circle user-avatar d-flex align-items-center justify-content-center bg-light text-primary"></i>
-                                <?php endif; ?>
+                            <?php if (isset($meusDados['url_foto_150x200']) && !empty($meusDados['url_foto_150x200'])): ?>
+                                <img src="<?php echo htmlspecialchars($meusDados['url_foto_150x200']); ?>"
+                                    class="user-avatar" alt="Foto do usuário" 
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <i class="fas fa-user-circle user-avatar d-flex align-items-center justify-content-center bg-light text-primary" style="display: none;"></i>
+                            <?php else: ?>
+                                <i class="fas fa-user-circle user-avatar d-flex align-items-center justify-content-center bg-light text-primary"></i>
+                            <?php endif; ?>
                                 <span class="text-white"><?php echo htmlspecialchars($meusDados['nome_usual']); ?></span>
                                 <i class="fas fa-chevron-down ms-2 text-white-50"></i>
                             </a>
@@ -1237,6 +1260,17 @@
                     <script src="assets/js/day-selector.js"></script>
                     <script src="assets/js/notification.js"></script>
                     <script>
+                        // Filtrar erros de extensões externas
+                        const originalError = console.error;
+                        console.error = function(...args) {
+                            const message = args.join(' ');
+                            if (!message.includes('cuponomia') && 
+                                !message.includes('spa-maker') && 
+                                !message.includes('listener indicated an asynchronous response')) {
+                                originalError.apply(console, args);
+                            }
+                        };
+
                         // Inicialização dos elementos da interface
                         document.addEventListener('DOMContentLoaded', function() { // Evitar execução múltipla
                             if (window.baseScriptLoaded) return;
